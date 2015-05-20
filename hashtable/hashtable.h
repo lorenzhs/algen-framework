@@ -11,6 +11,9 @@ class hashtable {
 public:
     using value_type = std::pair<Key, T>;
 
+    // You also need to provide the following:
+    // static void register_contenders(common::contender_list<hashtable<Key, T>> &list)
+
     /// Retrieve a key's value, or insert a default-constructed value if not found
     virtual T& operator[](const Key &key) = 0;
 

@@ -17,6 +17,14 @@ public:
     unordered_map(const size_t bucket_count = 0) : hashtable<Key, T>(), map(bucket_count) {}
     ~unordered_map() {}
 
+    // Register all contenders in the list
+    static void register_contenders(common::contender_list<hashtable<Key, T>> &list) {
+        using Factory = common::contender_factory<hashtable<Key, T>>;
+        list.register_contender(Factory([]{
+            return new unordered_map<Key, T>();
+        }));
+    }
+
     T& operator[](const Key &key) {
         return map[key];
     }
