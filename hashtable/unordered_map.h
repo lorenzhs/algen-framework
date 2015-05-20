@@ -20,7 +20,7 @@ public:
     // Register all contenders in the list
     static void register_contenders(common::contender_list<hashtable<Key, T>> &list) {
         using Factory = common::contender_factory<hashtable<Key, T>>;
-        list.register_contender(Factory([]{
+        list.register_contender(Factory("std::unordered_map with defaults", []{
             return new unordered_map<Key, T>();
         }));
     }

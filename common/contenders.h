@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <type_traits>
+#include <string>
 #include <vector>
 
 namespace common {
@@ -11,7 +12,9 @@ class contender_factory {
 public:
 	using F = std::function<R*(void)>;
 
-	contender_factory(F &&factory) : factory(std::forward<F>(factory)) {}
+	contender_factory(std::string &&desc, F &&factory) : 
+		description(std::forward<std::string>(desc)),
+		factory(std::forward<F>(factory)) {}
 	contender_factory(contender_factory &&other) = default;
 	contender_factory(const contender_factory &other) = default;
 	contender_factory() = delete;
@@ -21,6 +24,7 @@ public:
 	}
 protected:
 	F factory;
+	std::string description;
 };
 
 
