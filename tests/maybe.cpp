@@ -11,6 +11,13 @@ SCENARIO("maybe monad", "[maybe]") {
 		maybe<int> c(nothing<int>());
 		maybe<int> d(just(3));
 
+		WHEN("We take their size") {
+			THEN("They're 2*sizeof(T)") {
+				REQUIRE(sizeof(a) == 2*sizeof(int));
+				REQUIRE(sizeof(c) == 2*sizeof(int));
+			}
+		}
+
 		WHEN("We compare them") {
 			THEN("It works as it should") {
 				REQUIRE(a != b);
@@ -52,6 +59,11 @@ SCENARIO("maybe monad", "[maybe]") {
 				REQUIRE(b == 0); // another stupid hack to fool compiler (otherwise b is set but not used...)
 				REQUIRE_THROWS((int)n);
 				REQUIRE_THROWS((void*)n);
+			}
+		}
+		WHEN("We take the void monad's size") {
+			THEN("It's size is 1") {
+				REQUIRE(sizeof(n) == 1);
 			}
 		}
 	}
