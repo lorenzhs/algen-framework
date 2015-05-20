@@ -4,6 +4,8 @@
 
 using namespace common::maybe;
 
+namespace hashtable {
+
 template <typename Key, typename T>
 class hashtable {
 public:
@@ -23,8 +25,9 @@ public:
     virtual size_t erase(const Key &key) = 0;
 
     /// Returns the number of elements
-    size_t size() const = 0;
+    virtual size_t size() const = 0;
 
     /// Clear the hash table
     virtual void clear() = 0;
 };
+}

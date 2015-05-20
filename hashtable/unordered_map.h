@@ -1,7 +1,6 @@
 #pragma once
 
-#pragma once
-
+#include <cassert>
 #include <unordered_map>
 
 #include "hashtable.h"
@@ -12,10 +11,10 @@ template <typename Key,
           typename T,
           typename Hash = std::hash<Key>,
           typename KeyEqual = std::equal_to<Key>,
-          typename Allocator = std::allocator< std::pair<const Key, T>>
+          typename Allocator = std::allocator<std::pair<const Key, T>>>
 class unordered_map : public hashtable<Key, T> {
 public:
-    unordered_map(const size_t bucket_count = 0) : hashtable(), map(bucket_count) {}
+    unordered_map(const size_t bucket_count = 0) : hashtable<Key, T>(), map(bucket_count) {}
     ~unordered_map() {}
 
     T& operator[](const Key &key) {
@@ -31,7 +30,8 @@ public:
         if (it == map.end()) {
             return nothing<T>();
         } else {
-            return just<T>(*it);
+            assert(it->first == key);
+            return just<T>(it->second);
         }
     }
 
