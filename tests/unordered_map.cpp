@@ -12,17 +12,17 @@ SCENARIO("unordered_map's basic functions work", "[hashtable]") {
 
 		WHEN("We ask for the elements") {
 			THEN("Their values are correct") {
-				REQUIRE(m[0] == 0);
-				REQUIRE(m[1] == 1);
-				REQUIRE(m[2] == 4);
-				REQUIRE(m[10] == 100);
-				REQUIRE(m[99] == 9801);
+				CHECK(m[0] == 0);
+				CHECK(m[1] == 1);
+				CHECK(m[2] == 4);
+				CHECK(m[10] == 100);
+				CHECK(m[99] == 9801);
 			}
 		}
 
 		WHEN("We ask for elements that don't exist") {
 			THEN("Find returns nothing") {
-				REQUIRE(m.find(n) == nothing<unsigned int>());
+				CHECK(m.find(n) == nothing<unsigned int>());
 			}
 			AND_THEN("operator[] returns 0, and afterwards, find will find them") {
 				REQUIRE(m[n] == 0);
@@ -37,13 +37,13 @@ SCENARIO("unordered_map's basic functions work", "[hashtable]") {
 				REQUIRE(m[n] == n);
 			}
 			AND_THEN("The size increases") {
-				REQUIRE(m.size() == n+1);
+				CHECK(m.size() == n+1);
 			}
 		}
 
 		WHEN("We ask its size") {
 			THEN("It returns the correct value") {
-				REQUIRE(m.size() == n);
+				CHECK(m.size() == n);
 			}
 		}
 
@@ -52,12 +52,12 @@ SCENARIO("unordered_map's basic functions work", "[hashtable]") {
 				m.erase(i);
 			}
 			THEN("The size decreases") {
-				REQUIRE(m.size() == n-n/2);
+				CHECK(m.size() == n-n/2);
 			}
 			AND_THEN("We won't be able to find them any more") {
-				REQUIRE(m.find(0) == nothing<unsigned int>());
-				REQUIRE(m.find(n/2-1) == nothing<unsigned int>());
-				REQUIRE(m.find(n/2) == just<unsigned int>((n/2)*(n/2)));
+				CHECK(m.find(0) == nothing<unsigned int>());
+				CHECK(m.find(n/2-1) == nothing<unsigned int>());
+				CHECK(m.find(n/2) == just<unsigned int>((n/2)*(n/2)));
 			}
 			AND_THEN("operator[] will reinsert them") {
 				REQUIRE(m[0] == 0);
@@ -68,10 +68,10 @@ SCENARIO("unordered_map's basic functions work", "[hashtable]") {
 		WHEN("We clear it") {
 			m.clear();
 			THEN("Its size changes to 0") {
-				REQUIRE(m.size() == 0);
+				CHECK(m.size() == 0);
 			}
 			AND_THEN("We won't be able to find the elements any more") {
-				REQUIRE(m.find(0) == nothing<unsigned int>());
+				CHECK(m.find(0) == nothing<unsigned int>());
 			}
 		}
 	}

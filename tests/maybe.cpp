@@ -13,30 +13,30 @@ SCENARIO("maybe monad", "[maybe]") {
 
 		WHEN("We take their size") {
 			THEN("They're 2*sizeof(T)") {
-				REQUIRE(sizeof(a) == 2*sizeof(int));
-				REQUIRE(sizeof(c) == 2*sizeof(int));
+				CHECK(sizeof(a) == 2*sizeof(int));
+				CHECK(sizeof(c) == 2*sizeof(int));
 			}
 		}
 
 		WHEN("We compare them") {
 			THEN("It works as it should") {
-				REQUIRE(a != b);
-				REQUIRE(b == d);
-				REQUIRE(a != c);
+				CHECK(a != b);
+				CHECK(b == d);
+				CHECK(a != c);
 			}
 		}
 
 		WHEN("We dereference them") {
 			THEN("We get their values") {
-				REQUIRE(*a == 2);
-				REQUIRE(*b == 3);
+				CHECK(*a == 2);
+				CHECK(*b == 3);
 			}
 		}
 
 		WHEN("We cast them to their data type") {
 			THEN("We get their values") {
-				REQUIRE((int)a == 2);
-				REQUIRE((int)b == 3);
+				CHECK((int)a == 2);
+				CHECK((int)b == 3);
 			}
 		}
 	}
@@ -47,23 +47,21 @@ SCENARIO("maybe monad", "[maybe]") {
 
 		WHEN("We try to dereference it") {
 			THEN("It throws") {
-				REQUIRE_THROWS(*a);
-				REQUIRE_THROWS(*n);
+				CHECK_THROWS(*a);
+				CHECK_THROWS(*n);
 			}
 		}
 		WHEN("We try to cast it") {
 			THEN("It throws"){
-				REQUIRE_THROWS((int)a);
-				char b(0); // stupid hack to fool compiler
-				REQUIRE_THROWS(b = (char)a);
-				REQUIRE(b == 0); // another stupid hack to fool compiler (otherwise b is set but not used...)
-				REQUIRE_THROWS((int)n);
-				REQUIRE_THROWS((void*)n);
+				CHECK_THROWS((int)a);
+				CHECK_THROWS(char b = (char)a);
+				CHECK_THROWS((int)n);
+				CHECK_THROWS((void*)n);
 			}
 		}
 		WHEN("We take the void monad's size") {
 			THEN("It's size is 1") {
-				REQUIRE(sizeof(n) == 1);
+				CHECK(sizeof(n) == 1);
 			}
 		}
 	}
@@ -83,31 +81,31 @@ SCENARIO("maybe monad", "[maybe]") {
 
 		WHEN("We apply the function normally") {
 			THEN("It works") {
-				REQUIRE(f(a) == b);
+				CHECK(f(a) == b);
 			}
 		}
 		WHEN("We use the >>= syntax") {
 		 	THEN("We can apply the function") {
-		 		REQUIRE((a >>= f) == b);
-		 		REQUIRE((n >>= f) == n);
+		 		CHECK((a >>= f) == b);
+		 		CHECK((n >>= f) == n);
 		 	}
 		 	AND_THEN("We can chain the >>= operators") {
-		 		REQUIRE(((a >>= f) >>= f) == just<int>(3));
+		 		CHECK(((a >>= f) >>= f) == just<int>(3));
 		 	}
 		}
 
 		WHEN("We use the | syntax") {
 			THEN("We can apply and chain") {
-				REQUIRE((a | f | f) == just<int>(3));
-				REQUIRE((n | f) == n);
+				CHECK((a | f | f) == just<int>(3));
+				CHECK((n | f) == n);
 			}
 		}
 
 		WHEN("We use a function from maybe<int> to maybe<double>") {
 			THEN("That works") {
-				REQUIRE(*g(a) == Approx(2.0));
-				REQUIRE(*(a >>= g) == Approx(2.0));
-				REQUIRE(*(a | g) == Approx(2.0));
+				CHECK(*g(a) == Approx(2.0));
+				CHECK(*(a >>= g) == Approx(2.0));
+				CHECK(*(a | g) == Approx(2.0));
 			}
 		}
 	}
