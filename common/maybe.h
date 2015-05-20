@@ -13,6 +13,7 @@ template <typename T>
 struct maybe {
 	const T data;
 	const bool valid;
+	static const bool is_maybe = true;
 
 	maybe() : data(), valid(false) {}
 	maybe(const T &data) : data(data), valid(true) {}
@@ -35,7 +36,7 @@ struct maybe {
 	// actually you shouldn't use this
 	operator T() {
 		if (!valid)
-			throw std::logic_error("Cannot dereference Nothing");
+			throw std::logic_error("Cannot cast Nothing");
 		return data;
 	}
 
@@ -61,12 +62,20 @@ struct maybe {
 		else os << "nothing";
 		return os;
 	}
+
+    template<typename U>
+    friend constexpr maybe<U> nothing();
+    template<typename U>
+    friend constexpr maybe<U> just(const U &u);
+    template<typename U>
+    friend constexpr maybe<U> just(U &&u);
 };
 
 // dummy
 template<>
 struct maybe<void> {
 	static const bool valid = false;
+	static const bool is_maybe = true;
 
 	maybe() {}
 
@@ -95,10 +104,10 @@ constexpr maybe<T> just(T&& t) { return maybe<T>(std::forward<T>(t)); }
 // so x >>= fun >>= otherfun won't work, you need (x >>= fun) >>= otherfun
 template<typename T, typename Func>
 auto operator>>=(common::monad::maybe<T> &t, Func &&f) -> decltype(f(t.data)) {
-	static_assert(std::is_same<decltype(f(t.data)), common::monad::maybe<T>>::value, "Function does not return a maybe<T>");
+	static_assert(decltype(f(t.data))::is_maybe, "Function does not return a maybe<T>");
 
 	if (!t.valid) {
-		return common::monad::nothing<T>();
+		return decltype(f(t.data))(); // nothing
 	} else {
 		return std::forward<Func>(f)(t.data);
 	}
@@ -107,10 +116,10 @@ auto operator>>=(common::monad::maybe<T> &t, Func &&f) -> decltype(f(t.data)) {
 // const version
 template<typename T, typename Func>
 auto operator>>=(const common::monad::maybe<T> &t, Func &&f) -> decltype(f(t.data)) {
-	static_assert(std::is_same<decltype(f(t.data)), common::monad::maybe<T>>::value, "Function does not return a maybe<T>");
+	static_assert(decltype(f(t.data))::is_maybe, "Function does not return a maybe<T>");
 
 	if (!t.valid) {
-		return common::monad::nothing<T>();
+		return decltype(f(t.data))(); // nothing
 	} else {
 		return std::forward<Func>(f)(t.data);
 	}
