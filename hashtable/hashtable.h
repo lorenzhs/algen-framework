@@ -2,7 +2,7 @@
 
 #include "../common/maybe.h"
 
-using namespace common::maybe;
+using namespace common::monad;
 
 namespace hashtable {
 

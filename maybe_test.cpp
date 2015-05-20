@@ -3,13 +3,15 @@
 
 #include "common/maybe.h"
 
-using namespace common::maybe;
+using namespace common::monad;
 
 maybe<int> foo(maybe<int> a) {
 	return *a + 1;
 }
 
 int main(int argc, char **argv) {
+	assert(nothing<int>() == nothing<int>());
+	assert(just<int>(2) == just<int>(2));
 	auto m = just<int>(2);
 
 	maybe<int> x = (m >>= foo) >>= foo;
