@@ -7,6 +7,7 @@
 
 namespace common {
 
+// to be used for both data structure contenders and benchmarks
 template <typename R>
 class contender_factory {
 public:
