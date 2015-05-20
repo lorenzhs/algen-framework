@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ostream>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -10,20 +11,33 @@ namespace monad {
 // Kind of a maybe monad
 template <typename T>
 struct maybe {
-	T data;
-	bool valid;
+	const T data;
+	const bool valid;
 
 	maybe() : data(), valid(false) {}
 	maybe(const T &data) : data(data), valid(true) {}
 	maybe(const maybe &other) noexcept = default;
 	maybe(maybe &&other) noexcept = default;
 
-	const T operator*() const { return data; }
-	T&& operator*() { return std::forward<T>(data); }
+	// Dereference to obtain value. Throws if nothing!
+	T operator*() const {
+		if (!valid)
+			throw std::logic_error("Cannot dereference Nothing");
+		return data;
+	}
+	const T& operator*() {
+		if (!valid)
+			throw std::logic_error("Cannot dereference Nothing");
+		return data;
+	}
 
-	// define cast to T as unpacking. This asserts, so be careful!
+	// define cast to T as unpacking. This throws, so be careful!
 	// actually you shouldn't use this
-	operator T() { assert(valid); return data; }
+	operator T() {
+		if (!valid)
+			throw std::logic_error("Cannot dereference Nothing");
+		return data;
+	}
 
 	// Need assignment operator because move constructor is defined
 	void operator=(const maybe<T> &other) {
@@ -59,7 +73,10 @@ struct maybe<void> {
 	template <typename T>
 	maybe(const T &data) { static_assert(sizeof(T) == 0, "can't construct maybe<void> with value"); }
 
-	void operator*() const {}
+	void operator*() const { throw std::logic_error("Cannot dereference maybe<void>"); }
+
+	template<typename T>
+	operator T() { throw std::logic_error("Cannot cast maybe<void> to value type"); }
 };
 
 template<typename T=void>
