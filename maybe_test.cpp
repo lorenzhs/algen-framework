@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
 	x = x | foo | foo;
 
 	auto y = nothing<int>() >>= foo;
+	int z = x;
 
-	std::cout << "result: " << x << ", " << y <<  std::endl;
+	std::cout << "result: " << x << ", " << y << ", " << z << std::endl;
 	std::cout << "maybe<void>: " << sizeof(maybe<void>) << ", int: " << sizeof(maybe<int>) << ", " << sizeof(just<int>(1)) << ", " << sizeof(nothing<int>()) << std::endl;
 }

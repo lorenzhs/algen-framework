@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <ostream>
 #include <type_traits>
 #include <utility>
@@ -15,20 +14,31 @@ struct maybe {
 	bool valid;
 
 	maybe() : data(), valid(false) {}
-	maybe(const T& data) : data(data), valid(true) {}
+	maybe(const T &data) : data(data), valid(true) {}
+	maybe(const maybe &other) noexcept = default;
+	maybe(maybe &&other) noexcept = default;
 
 	const T operator*() const { return data; }
 	T&& operator*() { return std::forward<T>(data); }
 
-	operator T() { return data; }
+	// define cast to T as unpacking. This asserts, so be careful!
+	// actually you shouldn't use this
+	operator T() { assert(valid); return data; }
+
+	// Need assignment operator because move constructor is defined
+	void operator=(const maybe<T> &other) {
+		data = other.data;
+		valid = other.valid;
+	}
 
 	template<typename T2>
-	bool operator==(const maybe<T2> &other) {
+	bool operator==(const maybe<T2> &other) const {
+		static_assert(std::is_convertible<T, T2>::value, "Cannot convert maybe<> types");
 		return (valid == other.valid) && (!valid || data == other.data);
 	}
 
 	template<typename T2>
-	bool operator!=(const maybe<T2> &other) {
+	bool operator!=(const maybe<T2> &other) const {
 		return (valid != other.valid) || (valid && data != other.data);
 	}
 
@@ -43,16 +53,13 @@ struct maybe {
 template<>
 struct maybe<void> {
 	static const bool valid = false;
+
 	maybe() {}
 
 	template <typename T>
 	maybe(const T &data) { static_assert(sizeof(T) == 0, "can't construct maybe<void> with value"); }
 
-	const void operator*() const {}
-
-	friend std::ostream &operator<<(std::ostream &os, const maybe &m) {
-		return os << "nothing";
-	}
+	void operator*() const {}
 };
 
 template<typename T=void>
