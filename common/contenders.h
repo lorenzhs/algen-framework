@@ -12,10 +12,15 @@ template <typename R>
 class contender_factory {
 public:
 	using F = std::function<R*(void)>;
+	using D = std::function<void(R*)>; // Destructor
 
-	contender_factory(std::string &&desc, F &&factory) : 
-		description(std::forward<std::string>(desc)),
+	contender_factory(std::string &&desc, F &&factory) :
+		_description(std::forward<std::string>(desc)),
 		factory(std::forward<F>(factory)) {}
+	contender_factory(std::string &&desc, F &&factory, D &&destructor) :
+		_description(std::forward<std::string>(desc)),
+		factory(std::forward<F>(factory)),
+		destructor(std::forward<D>(destructor)) {}
 	contender_factory(contender_factory &&other) = default;
 	contender_factory(const contender_factory &other) = default;
 	contender_factory() = delete;
@@ -23,9 +28,19 @@ public:
 	R* operator()() {
 		return factory();
 	}
+
+	void destroy(R* instance) {
+		destructor(instance);
+	}
+
+	const std::string& description() {
+		return _description;
+	}
+
 protected:
 	F factory;
-	std::string description;
+	D destructor;
+	std::string _description;
 };
 
 
@@ -43,6 +58,37 @@ public:
 
 	void register_contender(contender_factory<Base> &&c) {
 		contenders.emplace_back(std::forward<contender_factory<Base>>(c));
+	}
+
+	template <typename F>
+	void register_contender(std::string &&desc, F &&f) {
+		contenders.emplace_back(contender_factory<Base>(std::forward<std::string>(desc),
+			std::forward<F>(f)));
+	}
+
+	size_t size() const {
+		return contenders.size();
+	}
+
+	contender_factory<Base>& operator[](const size_t index) {
+		return contenders[index];
+	}
+
+	// Provide iterators for easy access (both non-const and const)
+	auto begin() -> decltype(contenders.begin()) {
+		return contenders.begin();
+	}
+
+	auto begin() const -> decltype(contenders.begin()) {
+		return contenders.begin();
+	}
+
+	auto end() -> decltype(contenders.end()) {
+		return contenders.end();
+	}
+
+	auto end() const -> decltype(contenders.end()) {
+		return contenders.end();
 	}
 };
 

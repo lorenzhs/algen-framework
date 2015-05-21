@@ -1,11 +1,24 @@
 #pragma once
 
+#include "timer.h"
+#include "benchmark.h"
+
 namespace common {
 
-class timer_instrumentation {
+class instrumentation {
+	virtual void setup() = 0;
+	virtual void finish() = 0;
+	benchmark_result result() const;
+};
+
+struct timer_result : public benchmark_result {
+	double duration;
+	timer_result(double d) : duration(d) {}
+};
+
+class timer_instrumentation : public instrumentation {
 
 public:
-	typedef timer::return_type return_type;
 	timer_instrumentation() {}
 
 	void setup() {
@@ -16,12 +29,12 @@ public:
 		value = t.get();
 	}
 
-	return_type result() const {
-		return value;
+	timer_result result() const {
+		return timer_result(value);
 	}
 
 private:
 	timer t;
-	return_type value;
+	double value;
 };
 }
