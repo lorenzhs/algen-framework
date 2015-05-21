@@ -1,9 +1,7 @@
 CXX ?= g++
 
-CFLAGS = -std=c++11 -Wall -Wextra -Werror
+CFLAGS = -Ofast -std=c++1y -Wall -Werror -g
+LDFLAGS = -lpapi
 
-maybe_test: maybe_test.cpp *.h */*.h
-	$(CXX) $(CFLAGS) -o maybe_test maybe_test.cpp
-
-unordered_map_test: unordered_map_test.cpp *.h */*.h
-	$(CXX) $(CFLAGS) -o unordered_map_test unordered_map_test.cpp
+bench_tmp: bench_tmp.cpp *.h */*.h
+	$(CXX) $(CFLAGS) -o $@ $< $(LDFLAGS)
