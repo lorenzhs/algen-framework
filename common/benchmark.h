@@ -16,10 +16,10 @@ public:
 	F function, setup, teardown;
 
 	benchmark(F &&function) : function(std::forward<F>(function)) {};
-	benchmark(F &&setup, F &&function) : setup(std::forward<F>(setup)), function(std::forward<F>(function)) {};
+	benchmark(F &&setup, F &&function) : function(std::forward<F>(function)), setup(std::forward<F>(setup)) {};
 	benchmark(F &&setup, F &&function, F &&teardown)
-		: setup(std::forward<F>(setup))
-		, function(std::forward<F>(function))
+		: function(std::forward<F>(function))
+		, setup(std::forward<F>(setup))
 		, teardown(std::forward<F>(teardown)) {};
 	benchmark(const F &other) = delete;
 	benchmark() = delete;

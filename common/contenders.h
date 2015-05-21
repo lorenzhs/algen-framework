@@ -15,12 +15,12 @@ public:
 	using D = std::function<void(R*)>; // Destructor
 
 	contender_factory(std::string &&desc, F &&factory) :
-		_description(std::forward<std::string>(desc)),
-		factory(std::forward<F>(factory)) {}
-	contender_factory(std::string &&desc, F &&factory, D &&destructor) :
-		_description(std::forward<std::string>(desc)),
 		factory(std::forward<F>(factory)),
-		destructor(std::forward<D>(destructor)) {}
+		_description(std::forward<std::string>(desc)) {}
+	contender_factory(std::string &&desc, F &&factory, D &&destructor) :
+		factory(std::forward<F>(factory)),
+		destructor(std::forward<D>(destructor)),
+		_description(std::forward<std::string>(desc)) {}
 	contender_factory(contender_factory &&other) = default;
 	contender_factory(const contender_factory &other) = default;
 	contender_factory() = delete;
@@ -62,7 +62,8 @@ public:
 
 	template <typename F>
 	void register_contender(std::string &&desc, F &&f) {
-		contenders.emplace_back(contender_factory<Base>(std::forward<std::string>(desc),
+		contenders.emplace_back(contender_factory<Base>(
+			std::forward<std::string>(desc),
 			std::forward<F>(f)));
 	}
 
