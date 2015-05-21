@@ -3,6 +3,7 @@
 #include <cassert>
 #include <unordered_map>
 
+#include "../common/contenders.h"
 #include "hashtable.h"
 
 namespace hashtable {
