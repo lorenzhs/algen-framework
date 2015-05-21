@@ -15,12 +15,12 @@ template <typename Key,
 class unordered_map : public hashtable<Key, T> {
 public:
     unordered_map(const size_t bucket_count = 0) : hashtable<Key, T>(), map(bucket_count) {}
-    ~unordered_map() {}
+    virtual ~unordered_map() = default;
 
     // Register all contenders in the list
     static void register_contenders(common::contender_list<hashtable<Key, T>> &list) {
         using Factory = common::contender_factory<hashtable<Key, T>>;
-        list.register_contender(Factory("std::unordered_map with defaults",
+        list.register_contender(Factory("std::unordered_map",
             [](){ return new unordered_map<Key, T>();},
             [](hashtable<Key, T>* ht) { delete (unordered_map<Key, T>*) ht; }
         ));

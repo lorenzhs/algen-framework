@@ -32,5 +32,7 @@ public:
 
     /// Clear the hash table
     virtual void clear() = 0;
+protected:
+    ~hashtable() = default;
 };
 }
