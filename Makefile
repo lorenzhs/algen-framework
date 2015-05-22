@@ -1,10 +1,16 @@
 CXX ?= g++
+CC ?= gcc
 
 CFLAGS = -Ofast -std=c++1y -Wall -Werror -g
-LDFLAGS = -lpapi
+LDFLAGS = -lpapi -ldl
 
-bench_tmp: bench_tmp.cpp *.h */*.h
-	$(CXX) $(CFLAGS) -o $@ $< $(LDFLAGS)
+all: bench_tmp
+
+malloc_count.o: malloc_count/malloc_count.c  malloc_count/malloc_count.h
+	$(CC) -c -o $@ $<
+
+bench_tmp: bench_tmp.cpp *.h */*.h malloc_count.o
+	$(CXX) $(CFLAGS) -o $@ $< malloc_count.o $(LDFLAGS)
 
 run: bench_tmp
 	./bench_tmp

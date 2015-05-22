@@ -3,6 +3,8 @@
 #include <ostream>
 #include <papi.h>
 
+#include "../malloc_count/malloc_count.h"
+
 #include "timer.h"
 #include "benchmark.h"
 
@@ -112,5 +114,33 @@ public:
 
 using papi_instrumentation_cache = papi_instrumentation<>;
 using papi_instrumentation_instr = papi_instrumentation<PAPI_BR_MSP, PAPI_TOT_INS, PAPI_TOT_CYC>;
+
+
+struct memory_result : public benchmark_result {
+	size_t peak;
+	memory_result(size_t peak) : peak(peak) {}
+	virtual ~memory_result() = default;
+	std::ostream& print(std::ostream& os) const {
+		return os << "peak memory: " << peak << "B (" << (1.0 * peak) / (1<<20) << " MB)";
+	}
+	std::ostream& result(std::ostream& os) const {
+		return os << " peakmem=" << peak;
+	}
+};
+
+class memory_instrumentation : public instrumentation {
+public:
+	void setup() { malloc_count_reset_peak(); }
+	void finish() { peak = malloc_count_peak(); }
+	virtual memory_result* result() const { return new memory_result(peak); }
+	virtual ~memory_instrumentation() = default;
+
+	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
+		while (begin != end)
+			delete (memory_result*)*(begin++);
+	}
+private:
+	size_t peak;
+};
 
 }

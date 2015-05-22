@@ -3,3 +3,4 @@ bench_tmp
 *.pdf
 massif.out.*
 *.sublime-*
+*.o

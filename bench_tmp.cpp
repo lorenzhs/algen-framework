@@ -40,6 +40,10 @@ int main(int argc, char** argv) {
 		[](){ return new common::papi_instrumentation_instr(); },
 		[](common::instrumentation* instr) { delete (common::papi_instrumentation_instr*) instr; });
 
+	instrumentations.register_contender("peak memory usage", "peak_mem",
+		[](){ return new common::memory_instrumentation(); },
+		[](common::instrumentation* instr) { delete (common::memory_instrumentation*) instr; });
+
 	// Open result file
 	std::fstream res;
 
