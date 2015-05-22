@@ -1,4 +1,5 @@
 bench_tmp
+bench_tmp_malloc
 *.txt
 *.pdf
 massif.out.*

@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 
 	// Register instrumentations
 	common::contender_list<common::instrumentation> instrumentations;
+#ifndef MALLOC_INSTR
 	instrumentations.register_contender("timer", "timer",
 		[](){ return new common::timer_instrumentation(); },
 		[](common::instrumentation* instr) { delete (common::timer_instrumentation*) instr; });
@@ -40,9 +41,11 @@ int main(int argc, char** argv) {
 		[](){ return new common::papi_instrumentation_instr(); },
 		[](common::instrumentation* instr) { delete (common::papi_instrumentation_instr*) instr; });
 
-	instrumentations.register_contender("peak memory usage", "peak_mem",
+#else
+	instrumentations.register_contender("memory usage", "memory",
 		[](){ return new common::memory_instrumentation(); },
 		[](common::instrumentation* instr) { delete (common::memory_instrumentation*) instr; });
+#endif
 
 	// Open result file
 	std::fstream res;

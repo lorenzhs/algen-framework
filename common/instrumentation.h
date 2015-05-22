@@ -116,6 +116,7 @@ using papi_instrumentation_cache = papi_instrumentation<>;
 using papi_instrumentation_instr = papi_instrumentation<PAPI_BR_MSP, PAPI_TOT_INS, PAPI_TOT_CYC>;
 
 
+#ifdef MALLOC_INSTR
 struct memory_result : public benchmark_result {
 	size_t total, peak, count;
 	memory_result(size_t total, size_t peak, size_t count) : total(total), peak(peak), count(count) {}
@@ -166,5 +167,6 @@ private:
 	size_t total;
 	size_t count;
 };
+#endif
 
 }
