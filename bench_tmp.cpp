@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 	std::string resultfn_prefix = args.get<std::string>("p", "results_");
 
 	using HashTable = hashtable::hashtable<int, int>;
-	using Benchmark = common::benchmark<HashTable>;
+	using Benchmark = common::benchmark<HashTable, size_t>;
 
 	// Set up data structure contenders
 	common::contender_list<HashTable> contenders;
@@ -58,20 +58,24 @@ int main(int argc, char** argv) {
 		for (auto datastructure_factory : contenders) {
 			for (auto benchmark_factory : benchmarks) {
 				auto benchmark = benchmark_factory();
-				auto t = benchmark->run(datastructure_factory, instrumentation);
-				std::cout << "Data Structure: " << datastructure_factory.description() << "; "
-						  << "Benchmark: " << benchmark_factory.description() << "; "
-						  << "Result: " << *t << std::endl;
+				for (auto configuration : *benchmark) {
+					auto t = benchmark->run(datastructure_factory, instrumentation, configuration);
+					std::cout << "Data Structure: " << datastructure_factory.description() << "; "
+							  << "Benchmark: " << benchmark_factory.description() << "; "
+							  << "Configuration: " << configuration << "; "
+							  << "Result: " << *t << std::endl;
 
-				// Print RESULT lines for sqlplot-tools
-				res << "RESULT"
-					<< " ds=" << datastructure_factory.key()
-					<< " bench=" << benchmark_factory.key();
-				t->result(res);
-				res << std::endl;
+					// Print RESULT lines for sqlplot-tools
+					res << "RESULT"
+						<< " config=" << configuration
+						<< " ds=" << datastructure_factory.key()
+						<< " bench=" << benchmark_factory.key();
+					t->result(res);
+					res << std::endl;
 
+					results.push_back(t);
+				}
 				delete benchmark;
-				results.push_back(t);
 			}
 		}
 		res.close();
