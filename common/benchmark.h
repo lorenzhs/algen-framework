@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 #include <type_traits>
 
 #include "contenders.h"
@@ -9,8 +10,20 @@ namespace common {
 
 struct benchmark_result {
 	virtual std::ostream& print(std::ostream &os) const = 0;
+	virtual std::ostream& result(std::ostream &os) const = 0;
 	friend std::ostream& operator<<(std::ostream &os, const benchmark_result &res) {
 		return res.print(os);
+	}
+protected:
+	// remove spaces for sqlplottools
+	std::string& format_result_column(std::string&& str) const {
+		size_t pos = 0;
+
+		while ((pos = str.find(" ", pos)) != std::string::npos) {
+			str.replace(pos, 1, "-");
+			pos++;
+		}
+		return str;
 	}
 };
 
@@ -56,8 +69,12 @@ public:
 };
 
 template <typename F, typename Benchmark>
-void register_benchmark(std::string &&description, F &&f, common::contender_list<Benchmark> &benchmarks) {
-	benchmarks.register_contender(std::forward<std::string>(description),
+void register_benchmark(std::string &&description, std::string &&key,
+	F &&f, common::contender_list<Benchmark> &benchmarks)
+{
+	benchmarks.register_contender(
+		std::forward<std::string>(description),
+		std::forward<std::string>(key),
 		[f = std::forward<F>(f)]() -> Benchmark* {
 			return new Benchmark(f);
 		}
@@ -65,11 +82,13 @@ void register_benchmark(std::string &&description, F &&f, common::contender_list
 }
 
 template <typename Setup, typename Function, typename Benchmark>
-void register_benchmark(std::string &&description,
+void register_benchmark(std::string &&description, std::string &&key,
 	Setup &&setup, Function &&function,
 	common::contender_list<Benchmark> &benchmarks)
 {
-	benchmarks.register_contender(std::forward<std::string>(description),
+	benchmarks.register_contender(
+		std::forward<std::string>(description),
+		std::forward<std::string>(key),
 		[  setup = std::forward<Setup   >(setup),
 		function = std::forward<Function>(function)]() -> Benchmark* {
 			return new Benchmark(setup, function);
@@ -78,11 +97,13 @@ void register_benchmark(std::string &&description,
 }
 
 template <typename Setup, typename Function, typename Teardown, typename Benchmark>
-void register_benchmark(std::string &&description,
+void register_benchmark(std::string &&description, std::string &&key,
 	Setup &&setup, Function &&function, Teardown &&teardown,
 	common::contender_list<Benchmark> &benchmarks)
 {
-	benchmarks.register_contender(std::forward<std::string>(description),
+	benchmarks.register_contender(
+		std::forward<std::string>(description),
+		std::forward<std::string>(key),
 		[  setup = std::forward<Setup   >(setup),
 		function = std::forward<Function>(function),
 	    teardown = std::forward<Teardown>(teardown)]() -> Benchmark* {

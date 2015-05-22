@@ -23,6 +23,9 @@ struct timer_result : public benchmark_result {
 	std::ostream& print(std::ostream& os) const {
 		return os << duration << "ms";
 	}
+	std::ostream& result(std::ostream& os) const {
+		return os << " time=" << duration;
+	}
 };
 
 class timer_instrumentation : public instrumentation {
@@ -60,6 +63,12 @@ struct papi_result : public benchmark_result {
 		return os << describe_event(events[0]) << ": " << counters[0] << "; "
 				  << describe_event(events[1]) << ": " << counters[1] << "; "
 				  << describe_event(events[2]) << ": " << counters[2] << ".";
+	}
+
+	std::ostream& result(std::ostream& os) const {
+		return os << " " << format_result_column(describe_event(events[0])) << "=" << counters[0]
+				  << " " << format_result_column(describe_event(events[1])) << "=" << counters[1]
+				  << " " << format_result_column(describe_event(events[2])) << "=" << counters[2];
 	}
 };
 

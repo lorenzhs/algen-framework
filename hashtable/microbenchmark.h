@@ -19,9 +19,9 @@ public:
 			}
 		};
 
-		common::register_benchmark("insert", fill, benchmarks);
+		common::register_benchmark("insert", "insert",  fill, benchmarks);
 
-		common::register_benchmark("insert+find", [](HashTable &&map) {
+		common::register_benchmark("insert+find", "insert-find", [](HashTable &&map) {
 			const int num = 1000000;
 			for (int i = 0; i < num; ++i) {
 				map[i] = i; // TODO randomize
@@ -34,7 +34,7 @@ public:
 		}, benchmarks);
 
 
-		common::register_benchmark("ins-del-ins + del-ins-del", [](HashTable &&map) {
+		common::register_benchmark("ins-del-ins + del-ins-del", "ins-del-cycle", [](HashTable &&map) {
 			const int num = 1000000;
 			for (size_t i = 0; i < num; ++i) {
 				// TODO randomize
@@ -49,14 +49,14 @@ public:
 			}
 		}, benchmarks);
 
-		common::register_benchmark("access", fill,	[](HashTable &&map) {
+		common::register_benchmark("access", "access", fill, [](HashTable &&map) {
 			const int num = 1000000;
 			for (size_t i = 0; i < num; ++i) {
 				(void)map[i];
 			}
 		}, benchmarks);
 
-		common::register_benchmark("find", fill, [](HashTable &&map) {
+		common::register_benchmark("find", "find", fill, [](HashTable &&map) {
 			const int num = 1000000;
 			for (size_t i = 0; i < num; ++i) {
 				(void)map.find(i);
