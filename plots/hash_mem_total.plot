@@ -1,4 +1,4 @@
-# IMPORT-DATA memory ../results_memory.txt
+# IMPORT-DATA memory results_memory.txt
 
 set terminal pdf size 13.33cm,10cm linewidth 2.0
 set pointsize 0.5

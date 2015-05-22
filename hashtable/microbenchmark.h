@@ -18,7 +18,7 @@ public:
 			}
 		};
 
-		const std::vector<size_t> sizes{10000, 100000, 1000000, 10000000};
+		const std::vector<size_t> sizes{1<<16, 1<<18, 1<<20, /*1<<22, 1<<24, 1<<26*/};
 
 		common::register_benchmark("insert", "insert",  fill, sizes, benchmarks);
 

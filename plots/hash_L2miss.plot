@@ -1,4 +1,4 @@
-# IMPORT-DATA PAPI_cache ../results_PAPI_cache.txt
+# IMPORT-DATA PAPI_cache results_PAPI_cache.txt
 
 set terminal pdf size 13.33cm,10cm linewidth 2.0
 set pointsize 0.5

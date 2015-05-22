@@ -1,4 +1,4 @@
-# IMPORT-DATA PAPI_instr ../results_PAPI_instr.txt
+# IMPORT-DATA PAPI_instr results_PAPI_instr.txt
 
 set terminal pdf size 13.33cm,10cm linewidth 2.0
 set pointsize 0.5
