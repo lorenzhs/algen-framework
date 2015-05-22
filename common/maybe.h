@@ -16,9 +16,9 @@ struct maybe {
 	static const bool is_maybe = true;
 
 	maybe() : data(), valid(false) {}
+	maybe(const maybe &other) = default;
+	maybe(maybe &&other) = default;
 	maybe(const T &data) : data(data), valid(true) {}
-	maybe(const maybe &other) noexcept = default;
-	maybe(maybe &&other) noexcept = default;
 
 	// Dereference to obtain value. Throws if nothing!
 	T operator*() const {
