@@ -76,3 +76,61 @@ SCENARIO("unordered_map's basic functions work", "[hashtable]") {
 		}
 	}
 }
+
+SCENARIO("unordered_map with string keys or values", "[hashtable]") {
+	GIVEN("an unordered_map with string keys and int values") {
+		hashtable::unordered_map<std::string, int> m;
+		WHEN("We insert keys") {
+			m["foo"] = 1;
+			m["bar"] = 2;
+			THEN("We can retrieve them again") {
+				CHECK(m["foo"] == 1);
+				CHECK(m["bar"] == 2);
+			}
+			AND_THEN("We can find them") {
+				CHECK(m.find("foo") == just<int>(1));
+				CHECK(m.find("bar") == just<int>(2));
+			}
+			AND_THEN("Nonexistant keys are not found") {
+				CHECK(m.find("baz") == nothing<int>());
+			}
+		}
+		WHEN("We delete keys") {
+			m["foo"] = 1;
+			m["bar"] = 2;
+			m.erase("foo");
+			THEN("They are gone") {
+				CHECK(m.find("foo") == nothing<int>());
+			} AND_THEN("The other ones are still there") {
+				CHECK(m.find("bar") == just<int>(2));
+			}
+		}
+	}
+
+	GIVEN("an unordered map with string keys and values") {
+		hashtable::unordered_map<std::string, std::string> m;
+		WHEN("We insert keys") {
+			m["foo"] = "oof";
+			m["bar"] = "baz";
+			THEN("We can retrieve them again") {
+				CHECK(m["foo"] == "oof");
+				CHECK(m["bar"] == "baz");
+			}
+			AND_THEN("We can find them") {
+				CHECK(m.find("foo") == just<std::string>("oof"));
+				CHECK(m.find("bar") == just<std::string>("baz"));
+			}
+		}
+		WHEN("We delete keys") {
+			m["foo"] = "oof";
+			m["bar"] = "baz";
+			m.erase("foo");
+			THEN("They are gone") {
+				CHECK(m.find("foo") != just<std::string>("oof"));
+				CHECK(m.find("foo") == nothing<std::string>());
+			} AND_THEN("The other ones are still there") {
+				CHECK(m.find("bar") == just<std::string>("baz"));
+			}
+		}
+	}
+}

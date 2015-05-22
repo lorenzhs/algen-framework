@@ -1,3 +1,4 @@
 bench_tmp
 *.txt
 *.pdf
+massif.out.*
