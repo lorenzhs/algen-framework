@@ -117,30 +117,62 @@ using papi_instrumentation_instr = papi_instrumentation<PAPI_BR_MSP, PAPI_TOT_IN
 
 
 struct memory_result : public benchmark_result {
-	size_t peak;
-	memory_result(size_t peak) : peak(peak) {}
+	size_t peak, count;
+	memory_result(size_t peak, size_t count) : peak(peak), count(count) {}
 	virtual ~memory_result() = default;
+
 	std::ostream& print(std::ostream& os) const {
-		return os << "peak memory: " << peak << "B (" << (1.0 * peak) / (1<<20) << " MB)";
+		return os << "peak memory: " << peak << "B (" << (1.0 * peak) / (1<<20) << " MB)"
+			<< "; num mallocs: " << count;
 	}
 	std::ostream& result(std::ostream& os) const {
-		return os << " peakmem=" << peak;
+		return os << " peakmem=" << peak << " mallocs=" << count;
 	}
 };
 
 class memory_instrumentation : public instrumentation {
 public:
-	void setup() { malloc_count_reset_peak(); }
-	void finish() { peak = malloc_count_peak(); }
-	virtual memory_result* result() const { return new memory_result(peak); }
 	virtual ~memory_instrumentation() = default;
+	void setup() {
+		// measure base usage of framework
+		last = base = malloc_count_current();
+		count = 0;
+		malloc_count_reset_peak();
+		malloc_count_set_callback(memory_instrumentation::static_callback, this);
+	}
+
+	void finish() {
+		malloc_count_set_callback(nullptr, nullptr);
+		peak = malloc_count_peak();
+	}
+
+	virtual memory_result* result() const {
+		// subtract framework memory from peak usage
+		return new memory_result(peak - base, count);
+	}
+
+	static void static_callback(void* cookie, size_t current) {
+		return static_cast<memory_instrumentation*>(cookie)->malloc_callback(current);
+	}
+
+	// callback that is called whenever we malloc
+	void malloc_callback(size_t current) {
+		// count malloc operations
+		if (current > last) {
+			++count;
+		}
+		last = current;
+	}
 
 	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
 		while (begin != end)
 			delete (memory_result*)*(begin++);
 	}
 private:
+	size_t base;
 	size_t peak;
+	size_t last;
+	size_t count;
 };
 
 }
