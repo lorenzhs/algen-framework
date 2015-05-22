@@ -58,6 +58,9 @@ int main(int argc, char** argv) {
 		for (auto datastructure_factory : contenders) {
 			for (auto benchmark_factory : benchmarks) {
 				auto benchmark = benchmark_factory();
+				// dry run with first configuration to prevent skews
+				auto initial_configuration = *(benchmark->begin());
+				benchmark->run(datastructure_factory, instrumentation, initial_configuration);
 				for (auto configuration : *benchmark) {
 					auto t = benchmark->run(datastructure_factory, instrumentation, configuration);
 					std::cout << "Data Structure: " << datastructure_factory.description() << "; "
