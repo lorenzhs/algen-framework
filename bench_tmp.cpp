@@ -13,7 +13,7 @@
 
 int main(int argc, char** argv) {
 	common::arg_parser args(argc, argv);
-	std::string resultfn = args.get<std::string>("o", "results.txt");
+	std::string resultfn_prefix = args.get<std::string>("p", "results_");
 
 	using HashTable = hashtable::hashtable<int, int>;
 	using Benchmark = common::benchmark<HashTable>;
@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
 
 	// Open result file
 	std::fstream res;
-	res.open(resultfn, std::fstream::out);
 
 	// Run all combinations!
 	for (auto instrumentation : instrumentations) {
+		res.open(resultfn_prefix + instrumentation.key() + ".txt", std::fstream::out);
 		std::cout << "Running benchmark with " << instrumentation.description() << " instrumentation" << std::endl;
 		std::vector<common::benchmark_result*> results;
 		for (auto datastructure_factory : contenders) {
@@ -67,6 +67,7 @@ int main(int argc, char** argv) {
 				results.push_back(t);
 			}
 		}
+		res.close();
 		// TODO: aggregate and evaluate results
 
 		// Delete results
@@ -76,8 +77,6 @@ int main(int argc, char** argv) {
 		results.clear();
 		std::cout << std::endl << std::endl;
 	}
-
-	res.close();
 
 	// Shut down PAPI if it was used
 	if (PAPI_is_initialized() != PAPI_NOT_INITED)
