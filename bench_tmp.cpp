@@ -4,13 +4,17 @@
 
 #include <papi.h>
 
+#include "common/arg_parser.h"
 #include "common/benchmark.h"
 #include "common/contenders.h"
 #include "common/instrumentation.h"
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
 
-int main(void) {
+int main(int argc, char** argv) {
+	common::arg_parser args(argc, argv);
+	std::string resultfn = args.get<std::string>("o", "results.txt");
+
 	using HashTable = hashtable::hashtable<int, int>;
 	using Benchmark = common::benchmark<HashTable>;
 
@@ -38,7 +42,7 @@ int main(void) {
 
 	// Open result file
 	std::fstream res;
-	res.open("results.txt", std::fstream::out);
+	res.open(resultfn, std::fstream::out);
 
 	// Run all combinations!
 	for (auto instrumentation : instrumentations) {
