@@ -7,7 +7,12 @@
 
 namespace common {
 
-struct benchmark_result {};
+struct benchmark_result {
+	virtual std::ostream& print(std::ostream &os) const = 0;
+	friend std::ostream& operator<<(std::ostream &os, const benchmark_result &res) {
+		return res.print(os);
+	}
+};
 
 template <typename DataStructure>
 class benchmark {
@@ -25,29 +30,28 @@ public:
 	benchmark() = delete;
 
 	template <typename Instrumentation>
-	auto run(contender_factory<DataStructure> &factory, Instrumentation &instr) -> decltype(instr.result()) {
-		//std::cout << "two lvalue references" << std::endl;
-		DataStructure* instance = factory();
+	auto run(contender_factory<DataStructure> &factory, contender_factory<Instrumentation> &instrumentation) -> decltype(instrumentation()->result()) {
+		// Create data structure and set up benchmark
+		DataStructure *instance = factory();
 		if (setup) setup(std::forward<DataStructure>(*instance));
-		instr.setup();
-		function(std::forward<DataStructure>(*instance));
-		instr.finish();
-		if (teardown) teardown(std::forward<DataStructure>(*instance));
-		factory.destroy(instance);
-		return instr.result();
-	}
 
-	template <typename Instrumentation>
-	auto run(contender_factory<DataStructure> &factory, Instrumentation &&instr) -> decltype(instr.result()) {
-		//std::cout << "lvalue factory, rvalue instrumentation" << std::endl;
-		DataStructure* instance = factory();
-		if (setup) setup(std::forward<DataStructure>(*instance));
-		instr.setup();
+		// Set up instrumentation
+		Instrumentation *instr = instrumentation();
+		instr->setup();
+
+		// Run benchmark
 		function(std::forward<DataStructure>(*instance));
-		instr.finish();
+
+		// stop and destroy instrumentation
+		instr->finish();
+		auto result = instr->result();
+		instrumentation.destroy(instr);
+
+		// Tear down benchmark and destroy data structure
 		if (teardown) teardown(std::forward<DataStructure>(*instance));
 		factory.destroy(instance);
-		return instr.result();
+
+		return result;
 	}
 };
 

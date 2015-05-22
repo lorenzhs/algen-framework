@@ -67,6 +67,14 @@ public:
 			std::forward<F>(f)));
 	}
 
+	template <typename F, typename D>
+	void register_contender(std::string &&desc, F &&f, D &&d) {
+		contenders.emplace_back(contender_factory<Base>(
+			std::forward<std::string>(desc),
+			std::forward<F>(f),
+			std::forward<D>(d)));
+	}
+
 	size_t size() const {
 		return contenders.size();
 	}

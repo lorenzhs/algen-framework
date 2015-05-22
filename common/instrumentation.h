@@ -12,14 +12,16 @@ class instrumentation {
 public:
 	virtual void setup() = 0;
 	virtual void finish() = 0;
-	benchmark_result result() const;
+	virtual benchmark_result* result() const = 0;
+	virtual void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) = 0;
 };
 
 struct timer_result : public benchmark_result {
 	double duration;
 	timer_result(double d) : duration(d) {}
-	friend std::ostream& operator<<(std::ostream &os, const timer_result &res) {
-		return os << res.duration << "ms";
+	virtual ~timer_result() = default;
+	std::ostream& print(std::ostream& os) const {
+		return os << duration << "ms";
 	}
 };
 
@@ -27,7 +29,13 @@ class timer_instrumentation : public instrumentation {
 public:
 	void setup() { t.reset(); }
 	void finish() { value = t.get(); }
-	timer_result result() const { return timer_result(value); }
+	virtual timer_result* result() const { return new timer_result(value); }
+	virtual ~timer_instrumentation() = default;
+
+	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
+		while (begin != end)
+			delete (timer_result*)*(begin++);
+	}
 private:
 	timer t;
 	double value;
@@ -40,6 +48,7 @@ struct papi_result : public benchmark_result {
 		counters[0] = c[0];	counters[1] = c[1];	counters[2] = c[2];
 		events[0] = e[0]; events[1] = e[1]; events[2] = e[2];
 	}
+	virtual ~papi_result() = default;
 
 	static std::string describe_event(int event) {
 		PAPI_event_info_t info;
@@ -47,10 +56,10 @@ struct papi_result : public benchmark_result {
 		return std::string{(char*)info.short_descr};
 	}
 
-	friend std::ostream& operator<<(std::ostream &os, const papi_result &res) {
-		return os << describe_event(res.events[0]) << ": " << res.counters[0] << "; "
-				  << describe_event(res.events[1]) << ": " << res.counters[1] << "; "
-				  << describe_event(res.events[2]) << ": " << res.counters[2] << ".";
+	std::ostream& print(std::ostream& os) const {
+		return os << describe_event(events[0]) << ": " << counters[0] << "; "
+				  << describe_event(events[1]) << ": " << counters[1] << "; "
+				  << describe_event(events[2]) << ": " << counters[2] << ".";
 	}
 };
 
@@ -66,6 +75,7 @@ public:
 			std::cerr << "PAPI_library_init failed" << std::endl;
 		}
 	};
+	virtual ~papi_instrumentation() = default;
 
 	void setup() {
 		int ret = PAPI_start_counters(events, 3);
@@ -81,8 +91,13 @@ public:
 		}
 	}
 
-	papi_result result() const {
-		return papi_result(events, counters);
+	papi_result* result() const {
+		return new papi_result(events, counters);
+	}
+
+	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
+		while (begin != end)
+			delete (papi_result*)*(begin++);
 	}
 };
 

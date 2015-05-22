@@ -24,15 +24,35 @@ int main(void) {
 	//	[] { return new common::papi_instrumentation_cache(); },
 	//	[] { return new common::papi_instrumentation_instr(); }};
 
-	for (auto datastructure_factory : contenders) {
-		for (auto benchmark_factory : benchmarks) {
-			auto benchmark = benchmark_factory();
-			auto t = benchmark->run(datastructure_factory, common::timer_instrumentation());
-			std::cout << "Data Structure: " << datastructure_factory.description() << "; "
-					  << "Benchmark: " << benchmark_factory.description() << "; "
-					  << "Result: " << t << std::endl;
-			delete benchmark;
+	common::contender_list<common::instrumentation> instrumentations;
+	instrumentations.register_contender("timer",
+		[](){ return new common::timer_instrumentation(); },
+		[](common::instrumentation* instr) { delete (common::timer_instrumentation*) instr; });
+
+	instrumentations.register_contender("PAPI cache",
+		[](){ return new common::papi_instrumentation_cache(); },
+		[](common::instrumentation* instr) { delete (common::papi_instrumentation_cache*) instr; });
+
+	for (auto instrumentation : instrumentations) {
+		std::cout << "Running benchmark with " << instrumentation.description() << " instrumentation" << std::endl;
+		std::vector<common::benchmark_result*> results;
+		for (auto datastructure_factory : contenders) {
+			for (auto benchmark_factory : benchmarks) {
+				auto benchmark = benchmark_factory();
+				auto t = benchmark->run(datastructure_factory, instrumentation);
+				std::cout << "Data Structure: " << datastructure_factory.description() << "; "
+						  << "Benchmark: " << benchmark_factory.description() << "; "
+						  << "Result: " << *t << std::endl;
+				delete benchmark;
+				results.push_back(t);
+			}
 		}
+		// Delete results
+		auto temp = instrumentation();
+		temp->destroy(results.begin(), results.end());
+		instrumentation.destroy(temp);
+		results.clear();
+		std::cout << std::endl << std::endl;
 	}
 
 	// Shut down PAPI if it was used
