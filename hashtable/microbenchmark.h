@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "../common/timer.h"
 
 namespace hashtable {
@@ -23,11 +25,11 @@ public:
 		common::register_benchmark("insert", "insert",  fill, sizes, benchmarks);
 
 		common::register_benchmark("insert+find", "insert-find", [](HashTable &&map, size_t num) {
-			for (int i = 0; i < num; ++i) {
+			for (size_t i = 0; i < num; ++i) {
 				map[i] = i; // TODO randomize
 			}
-			int sum = 0;
-			for (int i = 0; i < num; ++i) {
+			typename std::remove_reference<decltype(map[0])>::type sum{};
+			for (size_t i = 0; i < num; ++i) {
 				sum += map.find(i); // TODO randomize
 			}
 			return sum;
