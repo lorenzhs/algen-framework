@@ -117,16 +117,18 @@ using papi_instrumentation_instr = papi_instrumentation<PAPI_BR_MSP, PAPI_TOT_IN
 
 
 struct memory_result : public benchmark_result {
-	size_t peak, count;
-	memory_result(size_t peak, size_t count) : peak(peak), count(count) {}
+	size_t total, peak, count;
+	memory_result(size_t total, size_t peak, size_t count) : total(total), peak(peak), count(count) {}
 	virtual ~memory_result() = default;
 
 	std::ostream& print(std::ostream& os) const {
-		return os << "peak memory: " << peak << "B (" << (1.0 * peak) / (1<<20) << " MB)"
+		return os
+			<< "total allocations: " << total << "B (" << (1.0 * total) / (1<<20) << " MB)"
+			<<     "; peak memory: " <<  peak << "B (" << (1.0 *  peak) / (1<<20) << " MB)"
 			<< "; num mallocs: " << count;
 	}
 	std::ostream& result(std::ostream& os) const {
-		return os << " peakmem=" << peak << " mallocs=" << count;
+		return os << " totalmem=" << total << " peakmem=" << peak << " mallocs=" << count;
 	}
 };
 
@@ -136,32 +138,21 @@ public:
 	void setup() {
 		// measure base usage of framework
 		last = base = malloc_count_current();
-		count = 0;
+		total = count = 0;
 		malloc_count_reset_peak();
-		malloc_count_set_callback(memory_instrumentation::static_callback, this);
+		malloc_count_reset_total();
+		malloc_count_reset_num_allocs();
 	}
 
 	void finish() {
-		malloc_count_set_callback(nullptr, nullptr);
 		peak = malloc_count_peak();
+		total = malloc_count_total();
+		count = malloc_count_num_allocs();
 	}
 
 	virtual memory_result* result() const {
 		// subtract framework memory from peak usage
-		return new memory_result(peak - base, count);
-	}
-
-	static void static_callback(void* cookie, size_t current) {
-		return static_cast<memory_instrumentation*>(cookie)->malloc_callback(current);
-	}
-
-	// callback that is called whenever we malloc
-	void malloc_callback(size_t current) {
-		// count malloc operations
-		if (current > last) {
-			++count;
-		}
-		last = current;
+		return new memory_result(total, peak - base, count);
 	}
 
 	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
@@ -172,6 +163,7 @@ private:
 	size_t base;
 	size_t peak;
 	size_t last;
+	size_t total;
 	size_t count;
 };
 

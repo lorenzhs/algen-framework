@@ -7,7 +7,7 @@ LDFLAGS = -lpapi -ldl
 all: bench_tmp
 
 malloc_count.o: malloc_count/malloc_count.c  malloc_count/malloc_count.h
-	$(CC) -c -o $@ $<
+	$(CC) -O2 -Wall -Werror -g -c -o $@ $<
 
 bench_tmp: bench_tmp.cpp *.h */*.h malloc_count.o
 	$(CXX) $(CFLAGS) -o $@ $< malloc_count.o $(LDFLAGS)
