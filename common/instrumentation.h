@@ -3,7 +3,9 @@
 #include <ostream>
 #include <papi.h>
 
+#ifdef MALLOC_INSTR
 #include "../malloc_count/malloc_count.h"
+#endif
 
 #include "timer.h"
 #include "benchmark.h"
