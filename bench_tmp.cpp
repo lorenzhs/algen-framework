@@ -50,23 +50,32 @@ int main(int argc, char** argv) {
 	// Open result file
 	std::fstream res;
 
+	std::vector<std::vector<common::benchmark_result*>> results;
+	results.resize(instrumentations.size());
+
+	auto result_it = results.begin();
+
 	// Run all combinations!
 	for (auto instrumentation : instrumentations) {
 		res.open(resultfn_prefix + instrumentation.key() + ".txt", std::fstream::out);
 		std::cout << "Running benchmark with " << instrumentation.description() << " instrumentation" << std::endl;
-		std::vector<common::benchmark_result*> results;
+		std::vector<common::benchmark_result*> &instr_results = *(result_it++);
+
 		for (auto datastructure_factory : contenders) {
 			for (auto benchmark_factory : benchmarks) {
 				auto benchmark = benchmark_factory();
 				// dry run with first configuration to prevent skews
 				auto initial_configuration = *(benchmark->begin());
-				benchmark->run(datastructure_factory, instrumentation, initial_configuration);
+				benchmark->run(datastructure_factory, instrumentation,
+					initial_configuration, benchmark_factory);
+
+				// Run benchmark on all configurations
 				for (auto configuration : *benchmark) {
-					auto t = benchmark->run(datastructure_factory, instrumentation, configuration);
-					std::cout << "Data Structure: " << datastructure_factory.description() << "; "
-							  << "Benchmark: " << benchmark_factory.description() << "; "
-							  << "Configuration: " << configuration << "; "
-							  << "Result: " << *t << std::endl;
+					// We need to pass in the benchmark factory here so that the
+					// result object can know its name...
+					auto t = benchmark->run(datastructure_factory, instrumentation,
+						configuration, benchmark_factory);
+					std::cout << *t << std::endl;
 
 					// Print RESULT lines for sqlplot-tools
 					res << "RESULT"
@@ -76,20 +85,26 @@ int main(int argc, char** argv) {
 					t->result(res);
 					res << std::endl;
 
-					results.push_back(t);
+					instr_results.push_back(t);
 				}
 				delete benchmark;
+				std::cout << std::endl;
 			}
+			std::cout << std::endl;
 		}
 		res.close();
 		// TODO: aggregate and evaluate results
 
+	}
+
+	result_it = results.begin();
+	for (auto instrumentation : instrumentations) {
 		// Delete results
+		std::vector<common::benchmark_result*> &instr_results = *(result_it++);
 		auto temp = instrumentation();
-		temp->destroy(results.begin(), results.end());
+		temp->destroy(instr_results.begin(), instr_results.end());
 		instrumentation.destroy(temp);
-		results.clear();
-		std::cout << std::endl << std::endl;
+		instr_results.clear();
 	}
 
 	// Shut down PAPI if it was used

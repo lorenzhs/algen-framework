@@ -9,9 +9,35 @@
 namespace common {
 
 struct benchmark_result {
+	template <typename Configuration>
+	void set_properties(const std::string &benchmark_name,
+		const std::string &instance_desc,
+		const Configuration &configuration_obj)
+	{
+		benchmark = benchmark_name;
+		instance = instance_desc;
+
+		std::stringstream s;
+		s << configuration_obj;
+		configuration = s.str();
+	}
+
+	const std::string& benchmark_name() const {
+		return benchmark;
+	}
+	const std::string& instance_desc() const {
+		return instance;
+	}
+	const std::string& configuration_desc() const {
+		return configuration;
+	}
+
 	virtual std::ostream& print(std::ostream &os) const = 0;
 	virtual std::ostream& result(std::ostream &os) const = 0;
 	friend std::ostream& operator<<(std::ostream &os, const benchmark_result &res) {
+		os << "Benchmark '" << res.benchmark
+		   << "' on instance '" << res.instance
+		   << "' with configuration '" << res.configuration << "': ";
 		return res.print(os);
 	}
 protected:
@@ -25,6 +51,8 @@ protected:
 		}
 		return str;
 	}
+
+	std::string benchmark, instance, configuration;
 };
 
 template <typename DataStructure, typename Configuration>
@@ -59,7 +87,8 @@ public:
 	template <typename Instrumentation>
 	auto run(contender_factory<DataStructure> &factory,
 		contender_factory<Instrumentation> &instrumentation,
-		Configuration &configuration)
+		Configuration &configuration,
+		contender_factory<benchmark> &benchmark_factory)
 		-> decltype(instrumentation()->result())
 	{
 		// Create data structure and set up benchmark
@@ -76,6 +105,9 @@ public:
 		// stop and destroy instrumentation
 		instr->finish();
 		auto result = instr->result();
+
+		result->set_properties(benchmark_factory.description(), factory.description(), configuration);
+
 		instrumentation.destroy(instr);
 
 		// Tear down benchmark and destroy data structure
