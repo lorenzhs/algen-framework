@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include "contenders.h"
+#include "terminal.h"
 
 namespace common {
 
@@ -17,6 +18,9 @@ struct benchmark_result {
 		benchmark = benchmark_name;
 		instance = instance_desc;
 
+		// convert configuration object into a string
+		// this might be a trivial type (e.g. size_t)
+		// so we can't just call a description member
 		std::stringstream s;
 		s << configuration_obj;
 		configuration = s.str();
@@ -35,9 +39,9 @@ struct benchmark_result {
 	virtual std::ostream& print(std::ostream &os) const = 0;
 	virtual std::ostream& result(std::ostream &os) const = 0;
 	friend std::ostream& operator<<(std::ostream &os, const benchmark_result &res) {
-		os << "Benchmark '" << res.benchmark
-		   << "' on instance '" << res.instance
-		   << "' with configuration '" << res.configuration << "': ";
+		os << "Benchmark '" << term_bold << res.benchmark << term_reset
+		   << "' on instance '" << term_bold << res.instance << term_reset
+		   << "' with configuration '" term_bold << res.configuration << term_reset << "': ";
 		return res.print(os);
 	}
 protected:
