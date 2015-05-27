@@ -2,7 +2,7 @@ CXX ?= g++
 CC ?= gcc
 
 COMMONFLAGS = -std=c++1y -Wall -Werror
-CFLAGS = ${COMMONFLAGS} -Ofast -g
+CFLAGS = ${COMMONFLAGS} -Ofast -g -DNDEBUG
 DEBUGFLAGS = ${COMMONFLAGS} -O0 -ggdb3
 LDFLAGS = -lpapi
 MALLOC_LDFLAGS = -ldl
