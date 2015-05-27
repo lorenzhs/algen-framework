@@ -43,9 +43,8 @@ int main(int argc, char** argv) {
 		[](){ return new common::memory_instrumentation(); });
 #endif
 
-	// Open result file
-	std::fstream res;
-	std::vector<common::benchmark_result*> results;
+	std::vector<std::vector<common::benchmark_result*>> results;
+	results.reserve(contenders.end() - contenders.begin());
 
 	// Run all combinations!
 	bool first_iteration = true;
@@ -55,16 +54,19 @@ int main(int argc, char** argv) {
 				  << term_reset << std::endl;
 
 		std::fstream::openmode res_flags = std::fstream::out;
-		if (!first_iteration) { // overwrite on first iteration, append afterwards
-			res_flags |= std::fstream::app;
-		}
-		first_iteration = false;
+		// overwrite on first iteration, append afterwards
+		if (!first_iteration) res_flags |= std::fstream::app;
+		else first_iteration = false;
+
+		std::vector<common::benchmark_result*> ds_results;
 
 		for (auto instrumentation : instrumentations) {
-			res.open(resultfn_prefix + instrumentation.key() + ".txt", res_flags);
 			std::cout << term_bold << common::term_set_colour(common::term_colour::fg_yellow)
-					  << "Running benchmark with " << instrumentation.description() << " instrumentation"
+					  << "Benchmarking " << datastructure_factory.description()
+					  << " with " << instrumentation.description() << " instrumentation"
 					  << term_reset << std::endl;
+
+			std::fstream res(resultfn_prefix + instrumentation.key() + ".txt", res_flags);
 
 			for (auto benchmark_factory : benchmarks) {
 				auto benchmark = benchmark_factory();
@@ -89,21 +91,21 @@ int main(int argc, char** argv) {
 					t->result(res);
 					res << std::endl;
 
-					results.push_back(t);
+					ds_results.push_back(t);
 				}
 				delete benchmark;
 				std::cout << std::endl;
 			}
+			res.close();
 			std::cout << std::endl;
 		}
-		res.close();
-		// TODO: aggregate and evaluate results
 
+		results.emplace_back(std::move(ds_results));
 	}
 
-	for (auto result : results) {
-		delete result;
-	}
+	for (auto ds_results : results)
+		for (auto result : ds_results)
+			delete result;
 
 	// Shut down PAPI if it was used
 	if (PAPI_is_initialized() != PAPI_NOT_INITED)
