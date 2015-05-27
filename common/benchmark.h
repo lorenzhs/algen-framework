@@ -59,13 +59,13 @@ protected:
 template <typename DataStructure, typename Configuration>
 class benchmark {
 public:
-	using F = std::function<void(DataStructure&&, Configuration&)>;
+	using F = std::function<void(DataStructure&, Configuration&)>;
 	F function, setup, teardown;
 	const std::vector<Configuration> &configurations;
 
 	// Constructor from benchmark function and configuration vector
 	benchmark(F &&function, const std::vector<Configuration> &configurations)
-		: function(std::move(function))
+		: function(std::forward<F>(function))
 		, configurations(configurations) {}
 
 	// Constructor from setup, benchmark, and configurations
@@ -94,14 +94,14 @@ public:
 	{
 		// Create data structure and set up benchmark
 		DataStructure *instance = factory();
-		if (setup) setup(std::forward<DataStructure>(*instance), configuration);
+		if (setup) setup(*instance, configuration);
 
 		// Set up instrumentation
 		Instrumentation *instr = instrumentation();
 		instr->setup();
 
 		// Run benchmark
-		function(std::forward<DataStructure>(*instance), configuration);
+		function(*instance, configuration);
 
 		// stop and destroy instrumentation
 		instr->finish();
@@ -112,7 +112,7 @@ public:
 		instrumentation.destroy(instr);
 
 		// Tear down benchmark and destroy data structure
-		if (teardown) teardown(std::forward<DataStructure>(*instance), configuration);
+		if (teardown) teardown(*instance, configuration);
 		factory.destroy(instance);
 
 		return result;
@@ -141,8 +141,8 @@ void register_benchmark(std::string &&description, std::string &&key,
 	F &&f, Configs &&configurations, common::contender_list<Benchmark> &benchmarks)
 {
 	benchmarks.register_contender(
-		std::forward<std::string>(description),
-		std::forward<std::string>(key),
+		std::move(description),
+		std::move(key),
 		[f = std::forward<F>(f),
 		configurations = std::forward<Configs>(configurations)]() -> Benchmark* {
 			return new Benchmark(f, configurations);
@@ -156,8 +156,8 @@ void register_benchmark(std::string &&description, std::string &&key,
 	common::contender_list<Benchmark> &benchmarks)
 {
 	benchmarks.register_contender(
-		std::forward<std::string>(description),
-		std::forward<std::string>(key),
+		std::move(description),
+		std::move(key),
 		[        setup = std::forward<Setup   >(setup),
 		      function = std::forward<Function>(function),
 		configurations = std::forward<Configs >(configurations)]() -> Benchmark* {
@@ -172,8 +172,8 @@ void register_benchmark(std::string &&description, std::string &&key,
 	Configs &&configurations, common::contender_list<Benchmark> &benchmarks)
 {
 	benchmarks.register_contender(
-		std::forward<std::string>(description),
-		std::forward<std::string>(key),
+		std::move(description),
+		std::move(key),
 		[        setup = std::forward<Setup   >(setup),
 		      function = std::forward<Function>(function),
 	          teardown = std::forward<Teardown>(teardown),
