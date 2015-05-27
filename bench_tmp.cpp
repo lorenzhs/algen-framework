@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 				auto benchmark = benchmark_factory();
 				// dry run with first configuration to prevent skews
 				auto initial_configuration = *(benchmark->begin());
-				benchmark->run(datastructure_factory, instrumentation,
+				delete benchmark->run(datastructure_factory, instrumentation,
 					initial_configuration, benchmark_factory);
 
 				// Run benchmark on all configurations
