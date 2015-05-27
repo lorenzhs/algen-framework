@@ -8,6 +8,7 @@
 #include "common/benchmark.h"
 #include "common/contenders.h"
 #include "common/instrumentation.h"
+#include "common/terminal.h"
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
 
@@ -58,7 +59,10 @@ int main(int argc, char** argv) {
 	// Run all combinations!
 	for (auto instrumentation : instrumentations) {
 		res.open(resultfn_prefix + instrumentation.key() + ".txt", std::fstream::out);
-		std::cout << "Running benchmark with " << instrumentation.description() << " instrumentation" << std::endl;
+		std::cout << term_bold << common::term_set_colour(common::term_colour::fg_yellow)
+				  << "Running benchmark with " << instrumentation.description() << " instrumentation"
+				  << term_reset << std::endl;
+
 		std::vector<common::benchmark_result*> &instr_results = *(result_it++);
 
 		for (auto datastructure_factory : contenders) {
