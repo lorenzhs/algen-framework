@@ -12,15 +12,9 @@ template <typename R>
 class contender_factory {
 public:
 	using F = std::function<R*(void)>;
-	using D = std::function<void(R*)>; // Destructor
 
 	contender_factory(std::string &&desc, std::string &&key, F &&factory) :
 		factory(std::move(factory)),
-		_description(std::move(desc)),
-		_key(std::move(key)) {}
-	contender_factory(std::string &&desc, std::string &&key, F &&factory, D &&destructor) :
-		factory(std::move(factory)),
-		destructor(std::move(destructor)),
 		_description(std::move(desc)),
 		_key(std::move(key)) {}
 	contender_factory(contender_factory &&other) = default;
@@ -29,10 +23,6 @@ public:
 
 	R* operator()() {
 		return factory();
-	}
-
-	void destroy(R* instance) {
-		destructor(instance);
 	}
 
 	const std::string& description() {
@@ -45,7 +35,6 @@ public:
 
 protected:
 	F factory;
-	D destructor;
 	std::string _description;
 	std::string _key;
 };
@@ -70,15 +59,6 @@ public:
 			std::move(desc),
 			std::move(key),
 			std::forward<F>(f)));
-	}
-
-	template <typename F, typename D>
-	void register_contender(std::string &&desc, std::string &&key, F &&f, D &&d) {
-		contenders.emplace_back(contender_factory<Base>(
-			std::move(desc),
-			std::move(key),
-			std::forward<F>(f),
-			std::forward<D>(d)));
 	}
 
 	size_t size() const {

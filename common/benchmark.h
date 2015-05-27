@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <sstream>
 #include <type_traits>
 
 #include "contenders.h"
@@ -9,7 +10,9 @@
 
 namespace common {
 
-struct benchmark_result {
+class benchmark_result {
+public:
+	virtual ~benchmark_result() {}
 	template <typename Configuration>
 	void set_properties(const std::string &benchmark_name,
 		const std::string &instance_desc,
@@ -21,9 +24,13 @@ struct benchmark_result {
 		// convert configuration object into a string
 		// this might be a trivial type (e.g. size_t)
 		// so we can't just call a description member
-		std::stringstream s;
-		s << configuration_obj;
-		configuration = s.str();
+		if (std::is_arithmetic<Configuration>::value) {
+			configuration = std::to_string(configuration_obj);
+		} else {
+			std::ostringstream s;
+			s << configuration_obj;
+			configuration = s.str();
+		}
 	}
 
 	const std::string& benchmark_name() const {
@@ -110,14 +117,13 @@ public:
 		// stop and destroy instrumentation
 		instr->finish();
 		auto result = instr->result();
+		delete instr;
 
 		result->set_properties(benchmark_factory.description(), factory.description(), configuration);
 
-		instrumentation.destroy(instr);
-
 		// Tear down benchmark and destroy data structure
 		if (teardown) teardown(*instance, configuration);
-		factory.destroy(instance);
+		delete instance;
 
 		return result;
 	}

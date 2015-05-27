@@ -32,7 +32,8 @@ public:
 
     /// Clear the hash table
     virtual void clear() = 0;
-protected:
-    ~hashtable() = default;
+
+    /// Virtual destructor to allow destruction through derived pointer
+    virtual ~hashtable() {}
 };
 }

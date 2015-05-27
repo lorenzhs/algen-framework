@@ -31,21 +31,16 @@ int main(int argc, char** argv) {
 	common::contender_list<common::instrumentation> instrumentations;
 #ifndef MALLOC_INSTR
 	instrumentations.register_contender("timer", "timer",
-		[](){ return new common::timer_instrumentation(); },
-		[](common::instrumentation* instr) { delete (common::timer_instrumentation*) instr; });
+		[](){ return new common::timer_instrumentation(); });
 
 	instrumentations.register_contender("PAPI cache", "PAPI_cache",
-		[](){ return new common::papi_instrumentation_cache(); },
-		[](common::instrumentation* instr) { delete (common::papi_instrumentation_cache*) instr; });
+		[](){ return new common::papi_instrumentation_cache(); });
 
 	instrumentations.register_contender("PAPI instruction", "PAPI_instr",
-		[](){ return new common::papi_instrumentation_instr(); },
-		[](common::instrumentation* instr) { delete (common::papi_instrumentation_instr*) instr; });
-
+		[](){ return new common::papi_instrumentation_instr(); });
 #else
 	instrumentations.register_contender("memory usage", "memory",
-		[](){ return new common::memory_instrumentation(); },
-		[](common::instrumentation* instr) { delete (common::memory_instrumentation*) instr; });
+		[](){ return new common::memory_instrumentation(); });
 #endif
 
 	// Open result file

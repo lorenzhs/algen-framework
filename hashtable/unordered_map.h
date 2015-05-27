@@ -22,8 +22,7 @@ public:
     static void register_contenders(common::contender_list<hashtable<Key, T>> &list) {
         using Factory = common::contender_factory<hashtable<Key, T>>;
         list.register_contender(Factory("std::unordered_map", "std__unordered_map",
-            [](){ return new unordered_map<Key, T>();},
-            [](hashtable<Key, T>* ht) { delete (unordered_map<Key, T>*) ht; }
+            [](){ return new unordered_map<Key, T>();}
         ));
     }
 

@@ -17,13 +17,14 @@ public:
 	virtual void setup() = 0;
 	virtual void finish() = 0;
 	virtual benchmark_result* result() const = 0;
-	virtual void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) = 0;
+	virtual ~instrumentation() {}
 };
 
-struct timer_result : public benchmark_result {
+class timer_result : public benchmark_result {
 	double duration;
+public:
 	timer_result(double d) : duration(d) {}
-	virtual ~timer_result() = default;
+	virtual ~timer_result() {}
 	std::ostream& print(std::ostream& os) const {
 		return os << duration << "ms";
 	}
@@ -38,24 +39,20 @@ public:
 	void finish() { value = t.get(); }
 	virtual timer_result* result() const { return new timer_result(value); }
 	virtual ~timer_instrumentation() = default;
-
-	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
-		while (begin != end)
-			delete (timer_result*)*(begin++);
-	}
 private:
 	timer t;
 	double value;
 };
 
-struct papi_result : public benchmark_result {
+class papi_result : public benchmark_result {
 	long long counters[3];
 	int events[3];
+public:
 	papi_result(int const *e, long long const *c) {
 		counters[0] = c[0];	counters[1] = c[1];	counters[2] = c[2];
 		events[0] = e[0]; events[1] = e[1]; events[2] = e[2];
 	}
-	virtual ~papi_result() = default;
+	virtual ~papi_result() {}
 
 	static std::string describe_event(int event) {
 		PAPI_event_info_t info;
@@ -107,11 +104,6 @@ public:
 	papi_result* result() const {
 		return new papi_result(events, counters);
 	}
-
-	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
-		while (begin != end)
-			delete (papi_result*)*(begin++);
-	}
 };
 
 using papi_instrumentation_cache = papi_instrumentation<>;
@@ -119,10 +111,11 @@ using papi_instrumentation_instr = papi_instrumentation<PAPI_BR_MSP, PAPI_TOT_IN
 
 
 #ifdef MALLOC_INSTR
-struct memory_result : public benchmark_result {
+class memory_result : public benchmark_result {
 	size_t total, peak, count;
+public:
 	memory_result(size_t total, size_t peak, size_t count) : total(total), peak(peak), count(count) {}
-	virtual ~memory_result() = default;
+	virtual ~memory_result() {}
 
 	std::ostream& print(std::ostream& os) const {
 		return os
@@ -158,10 +151,6 @@ public:
 		return new memory_result(total, peak - base, count);
 	}
 
-	void destroy(std::vector<benchmark_result*>::iterator begin, std::vector<benchmark_result*>::iterator end) {
-		while (begin != end)
-			delete (memory_result*)*(begin++);
-	}
 private:
 	size_t base;
 	size_t peak;
