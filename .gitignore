@@ -5,3 +5,4 @@ bench_tmp_malloc
 massif.out.*
 *.sublime-*
 *.o
+debug*

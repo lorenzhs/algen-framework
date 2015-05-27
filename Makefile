@@ -1,7 +1,9 @@
 CXX ?= g++
 CC ?= gcc
 
-CFLAGS = -Ofast -std=c++1y -Wall -Werror -g
+COMMONFLAGS = -std=c++1y -Wall -Werror
+CFLAGS = ${COMMONFLAGS} -Ofast -g
+DEBUGFLAGS = ${COMMONFLAGS} -O0 -ggdb3
 LDFLAGS = -lpapi
 MALLOC_LDFLAGS = -ldl
 
@@ -15,6 +17,9 @@ bench_tmp: bench_tmp.cpp *.h */*.h
 
 bench_tmp_malloc: bench_tmp.cpp *.h */*.h malloc_count.o
 	$(CXX) $(CFLAGS) -DMALLOC_INSTR -o $@ $< malloc_count.o $(LDFLAGS) $(MALLOC_LDFLAGS)
+
+debug: bench_tmp.cpp *.h */*.h
+	$(CXX) $(DEBUGFLAGS) -o $@ $< $(LDFLAGS)
 
 run: bench_tmp
 	./bench_tmp
