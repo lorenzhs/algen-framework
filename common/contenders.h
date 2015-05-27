@@ -15,14 +15,14 @@ public:
 	using D = std::function<void(R*)>; // Destructor
 
 	contender_factory(std::string &&desc, std::string &&key, F &&factory) :
-		factory(std::forward<F>(factory)),
-		_description(std::forward<std::string>(desc)),
-		_key(std::forward<std::string>(key)) {}
+		factory(std::move(factory)),
+		_description(std::move(desc)),
+		_key(std::move(key)) {}
 	contender_factory(std::string &&desc, std::string &&key, F &&factory, D &&destructor) :
-		factory(std::forward<F>(factory)),
-		destructor(std::forward<D>(destructor)),
-		_description(std::forward<std::string>(desc)),
-		_key(std::forward<std::string>(key)) {}
+		factory(std::move(factory)),
+		destructor(std::move(destructor)),
+		_description(std::move(desc)),
+		_key(std::move(key)) {}
 	contender_factory(contender_factory &&other) = default;
 	contender_factory(const contender_factory &other) = default;
 	contender_factory() = delete;
@@ -59,27 +59,24 @@ public:
 	contender_list() : contenders() {}
 	contender_list(contender_list &other) = delete;
 
-	void register_contender(const contender_factory<Base> &c) {
-		contenders.emplace_back(c); // push_back?
-	}
-
-	void register_contender(contender_factory<Base> &&c) {
-		contenders.emplace_back(std::forward<contender_factory<Base>>(c));
+	template <typename Contender> // URef
+	void register_contender(Contender &&c) {
+		contenders.emplace_back(std::forward<Contender>(c));
 	}
 
 	template <typename F>
 	void register_contender(std::string &&desc, std::string &&key, F &&f) {
 		contenders.emplace_back(contender_factory<Base>(
-			std::forward<std::string>(desc),
-			std::forward<std::string>(key),
+			std::move(desc),
+			std::move(key),
 			std::forward<F>(f)));
 	}
 
 	template <typename F, typename D>
 	void register_contender(std::string &&desc, std::string &&key, F &&f, D &&d) {
 		contenders.emplace_back(contender_factory<Base>(
-			std::forward<std::string>(desc),
-			std::forward<std::string>(key),
+			std::move(desc),
+			std::move(key),
 			std::forward<F>(f),
 			std::forward<D>(d)));
 	}

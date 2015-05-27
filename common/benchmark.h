@@ -42,14 +42,15 @@ struct benchmark_result {
 	}
 protected:
 	// remove spaces for sqlplottools
-	std::string& format_result_column(std::string&& str) const {
+	template <typename String> // URef
+	String&& format_result_column(String &&str) const {
 		size_t pos = 0;
 
 		while ((pos = str.find(" ", pos)) != std::string::npos) {
 			str.replace(pos, 1, "_");
 			pos++;
 		}
-		return str;
+		return std::forward<String>(str);
 	}
 
 	std::string benchmark, instance, configuration;
