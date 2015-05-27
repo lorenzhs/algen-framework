@@ -45,22 +45,27 @@ int main(int argc, char** argv) {
 
 	// Open result file
 	std::fstream res;
-
-	std::vector<std::vector<common::benchmark_result*>> results;
-	results.resize(instrumentations.size());
-
-	auto result_it = results.begin();
+	std::vector<common::benchmark_result*> results;
 
 	// Run all combinations!
-	for (auto instrumentation : instrumentations) {
-		res.open(resultfn_prefix + instrumentation.key() + ".txt", std::fstream::out);
-		std::cout << term_bold << common::term_set_colour(common::term_colour::fg_yellow)
-				  << "Running benchmark with " << instrumentation.description() << " instrumentation"
+	bool first_iteration = true;
+	for (auto datastructure_factory : contenders) {
+		std::cout << term_bold << term_underline << common::term_set_colour(common::term_colour::fg_green)
+				  << "Benchmarking " << datastructure_factory.description()
 				  << term_reset << std::endl;
 
-		std::vector<common::benchmark_result*> &instr_results = *(result_it++);
+		std::fstream::openmode res_flags = std::fstream::out;
+		if (!first_iteration) { // overwrite on first iteration, append afterwards
+			res_flags |= std::fstream::app;
+		}
+		first_iteration = false;
 
-		for (auto datastructure_factory : contenders) {
+		for (auto instrumentation : instrumentations) {
+			res.open(resultfn_prefix + instrumentation.key() + ".txt", res_flags);
+			std::cout << term_bold << common::term_set_colour(common::term_colour::fg_yellow)
+					  << "Running benchmark with " << instrumentation.description() << " instrumentation"
+					  << term_reset << std::endl;
+
 			for (auto benchmark_factory : benchmarks) {
 				auto benchmark = benchmark_factory();
 				// dry run with first configuration to prevent skews
@@ -84,7 +89,7 @@ int main(int argc, char** argv) {
 					t->result(res);
 					res << std::endl;
 
-					instr_results.push_back(t);
+					results.push_back(t);
 				}
 				delete benchmark;
 				std::cout << std::endl;
@@ -96,14 +101,8 @@ int main(int argc, char** argv) {
 
 	}
 
-	result_it = results.begin();
-	for (auto instrumentation : instrumentations) {
-		// Delete results
-		std::vector<common::benchmark_result*> &instr_results = *(result_it++);
-		auto temp = instrumentation();
-		temp->destroy(instr_results.begin(), instr_results.end());
-		instrumentation.destroy(temp);
-		instr_results.clear();
+	for (auto result : results) {
+		delete result;
 	}
 
 	// Shut down PAPI if it was used
