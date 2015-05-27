@@ -28,11 +28,9 @@ public:
 			for (size_t i = 0; i < num; ++i) {
 				map[i] = i; // TODO randomize
 			}
-			typename std::remove_reference<decltype(map[0])>::type sum{};
 			for (size_t i = 0; i < num; ++i) {
-				sum += map.find(i); // TODO randomize
+				map.find(i); // TODO randomize
 			}
-			return sum;
 		}, sizes, benchmarks);
 
 
