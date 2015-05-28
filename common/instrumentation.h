@@ -203,6 +203,52 @@ public:
 	std::ostream& result(std::ostream& os) const {
 		return os << " totalmem=" << total << " peakmem=" << peak << " mallocs=" << count;
 	}
+
+	virtual void add(const benchmark_result *const other) {
+		const memory_result* o = dynamic_cast<const memory_result*>(other);
+		total += o->total;
+		peak  += o->peak;
+		count += o->count;
+	};
+	virtual void min(const benchmark_result *const other) {
+		const memory_result* o = dynamic_cast<const memory_result*>(other);
+		total = std::min(total, o->total);
+		peak  = std::min(peak,  o->peak );
+		count = std::min(count, o->count);
+	};
+	virtual void max(const benchmark_result *const other) {
+		const memory_result* o = dynamic_cast<const memory_result*>(other);
+		total = std::max(total, o->total);
+		peak  = std::max(peak,  o->peak );
+		count = std::max(count, o->count);
+	};
+	virtual void div(const int divisor) {
+		total /= divisor;
+		peak  /= divisor;
+		count /= divisor;
+	};
+
+	virtual std::vector<double> compare_to(const benchmark_result *other) {
+		const memory_result *o = dynamic_cast<const memory_result*>(other);
+		auto divide = [](size_t a,size_t b) -> double {
+			if (a == 0 && b == 0) return 1.0;
+			else return (a * 1.0) / b;
+		};
+		return std::vector<double>{
+			divide(total, o->total),
+			divide(peak , o->peak),
+			divide(count, o->count)
+		};
+	}
+
+	virtual std::ostream& print_component(int component, std::ostream &os) {
+		switch (component) {
+		case 0: return os << "total allocations: " << total << "B (" << (1.0 * total) / (1<<20) << " MB)";
+		case 1: return os <<       "peak memory: " <<  peak << "B (" << (1.0 *  peak) / (1<<20) << " MB)";
+		case 2: return os << "num mallocs: " << count;
+		default: assert(false); return os;
+		}
+	}
 };
 
 class memory_instrumentation : public instrumentation {
@@ -226,6 +272,11 @@ public:
 	virtual memory_result* result() const {
 		// subtract framework memory from peak usage
 		return new memory_result(total, peak - base, count);
+	}
+
+	virtual memory_result* new_result(bool set_to_max = false) const {
+		size_t value = set_to_max ? ((size_t)1) << 62 : 0;
+		return new memory_result(value, value, value);
 	}
 
 private:
