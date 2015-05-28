@@ -13,6 +13,8 @@
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
 
+namespace term = common::term;
+
 void usage(char* name) {
 	using std::cout;
 	using std::endl;
@@ -66,9 +68,9 @@ int main(int argc, char** argv) {
 	// Run all combinations!
 	bool first_iteration = true;
 	for (auto datastructure_factory : contenders) {
-		std::cout << term_bold << term_underline << common::term_set_colour(common::term_colour::fg_green)
+		std::cout << term::bold << term::underline << common::term::set_colour(common::term::colour::fg_green)
 				  << "Benchmarking " << datastructure_factory.description()
-				  << term_reset << std::endl;
+				  << term::reset << std::endl;
 
 		std::fstream::openmode res_flags = std::fstream::out;
 		// overwrite on first iteration, append afterwards
@@ -78,10 +80,10 @@ int main(int argc, char** argv) {
 		std::vector<common::benchmark_result_aggregate> ds_results;
 
 		for (auto instrumentation_factory : instrumentations) {
-			std::cout << term_bold << common::term_set_colour(common::term_colour::fg_yellow)
+			std::cout << term::bold << common::term::set_colour(common::term::colour::fg_yellow)
 					  << "Benchmarking " << datastructure_factory.description()
 					  << " with " << instrumentation_factory.description() << " instrumentation"
-					  << term_reset << std::endl;
+					  << term::reset << std::endl;
 
 			std::fstream res(resultfn_prefix + instrumentation_factory.key() + ".txt", res_flags);
 

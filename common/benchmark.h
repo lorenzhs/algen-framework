@@ -102,9 +102,9 @@ public:
 	}
 
 	std::ostream& describe(std::ostream &os) const {
-		return os << "Benchmark '" << term_bold << benchmark << term_reset
-		          << "' on instance '" << term_bold << instance << term_reset
-		          << "' with configuration '" term_bold << configuration << term_reset << "': ";
+		return os << "Benchmark '" << term::bold << benchmark << term::reset
+		          << "' on instance '" << term::bold << instance << term::reset
+		          << "' with configuration '" << term::bold << configuration << term::reset << "': ";
 	}
 
 	friend std::ostream& operator<<(std::ostream &os, const benchmark_result_aggregate &res) {

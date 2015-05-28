@@ -3,8 +3,9 @@
 #include <sstream>
 
 namespace common {
+namespace term {
 
-enum term_colour : int {
+enum colour : int {
 	fg_black = 30,
 	fg_red = 31,
 	fg_green = 32,
@@ -25,19 +26,20 @@ enum term_colour : int {
 };
 
 // ANSI escape codes
-#define term_bold "\33[1m"
-#define term_underline "\33[4m"
-#define term_reverse "\33[7m"
-#define term_reset "\33[0m"
+static constexpr auto bold = "\33[1m";
+static constexpr auto underline = "\33[4m";
+static constexpr auto reverse = "\33[7m";
+static constexpr auto reset = "\33[0m";
 
-#define term_erase_line "\33[K"
+static constexpr auto erase_line = "\33[K";
 
-#define term_clear_screen "\33[2J"
+static constexpr auto clear_screen = "\33[2J";
 
-std::string term_set_colour(term_colour colour) {
+const std::string set_colour(colour c) {
 	std::stringstream s;
-	s << "\33[" << (int)colour << "m";
+	s << "\33[" << (int)c << "m";
 	return s.str();
 }
 
+}
 }
