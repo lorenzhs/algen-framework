@@ -6,16 +6,32 @@
 
 #include "common/arg_parser.h"
 #include "common/benchmark.h"
+#include "common/comparison.h"
 #include "common/contenders.h"
 #include "common/instrumentation.h"
 #include "common/terminal.h"
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
 
+void usage(char* name) {
+	using std::cout;
+	using std::endl;
+	cout << "Usage: " << name << " <options>" << endl << endl
+		 << "Options:" << endl
+		 << "-p <prefix>   result filename prefix (default: results_)" << endl
+		 << "-n <int>      number of repetitions for each benchmark (default: 1)" << endl
+		 << "-c <double>   cutoff, at which difference ratio to stop printing (deafult: 1.01)" << endl
+		 << "-m <int>      maximum number of differences to print (default: 25)" << endl;
+	exit(0);
+}
+
 int main(int argc, char** argv) {
 	common::arg_parser args(argc, argv);
+	if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
 	std::string resultfn_prefix = args.get<std::string>("p", "results_");
-	size_t repetitions = args.get<size_t>("n", 1);
+	size_t repetitions = args.get<size_t>("n", 1),
+		   max_results = args.get<size_t>("m", 25);
+	double cutoff = args.get<double>("c", 1.01);
 
 	using HashTable = hashtable::hashtable<int, int>;
 	using Benchmark = common::benchmark<HashTable, size_t>;
@@ -118,7 +134,12 @@ int main(int argc, char** argv) {
 		results.emplace_back(std::move(ds_results));
 	}
 
-	// TODO: compare results
+	// TODO: parameterize which to compare if more than two?
+	if (results.size() == 2) {
+		common::comparison comparison(results[0], results[1]);
+		comparison.compare();
+		comparison.print(std::cout, cutoff, max_results);
+	}
 
 	for (auto &ds_results : results)
 		for (auto &result : ds_results)

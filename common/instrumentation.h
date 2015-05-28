@@ -34,10 +34,26 @@ public:
 		return os << " time=" << duration;
 	}
 
-	virtual void add(const benchmark_result *const other) { duration += ((timer_result*)other)->duration; };
-	virtual void min(const benchmark_result *const other) { duration = std::min(duration, ((timer_result*)other)->duration); };
-	virtual void max(const benchmark_result *const other) { duration = std::max(duration, ((timer_result*)other)->duration); };
+	virtual void add(const benchmark_result *const other) {
+		duration += dynamic_cast<const timer_result*>(other)->duration;
+	};
+	virtual void min(const benchmark_result *const other) {
+		duration = std::min(duration, dynamic_cast<const timer_result*>(other)->duration);
+	};
+	virtual void max(const benchmark_result *const other) {
+		duration = std::max(duration, dynamic_cast<const timer_result*>(other)->duration);
+	};
 	virtual void div(const int divisor) { duration /= divisor; };
+
+	virtual std::vector<double> compare_to(const benchmark_result *other) {
+		const timer_result *o = dynamic_cast<const timer_result*>(other);
+		return std::vector<double>{duration / o->duration};
+	}
+
+	virtual std::ostream& print_component(int component, std::ostream &os) {
+		assert(component == 0);
+		return os << duration << "ms";
+	}
 };
 
 class timer_instrumentation : public instrumentation {
@@ -81,6 +97,11 @@ public:
 				  << describe_event(events[2]) << ": " << counters[2] << ".";
 	}
 
+	virtual std::ostream& print_component(int component, std::ostream &os) {
+		assert(component >= 0 && component <= 2);
+		return os << describe_event(events[component]) << ": " << counters[component];
+	}
+
 	std::ostream& result(std::ostream& os) const {
 		return os << " " << format_result_column(describe_event(events[0])) << "=" << counters[0]
 				  << " " << format_result_column(describe_event(events[1])) << "=" << counters[1]
@@ -110,6 +131,15 @@ public:
 		counters[1] /= divisor;
 		counters[2] /= divisor;
 	};
+
+	virtual std::vector<double> compare_to(const benchmark_result *other) {
+		const papi_result *o = dynamic_cast<const papi_result*>(other);
+		return std::vector<double>{
+			counters[0] * 1.0 / o->counters[0],
+			counters[1] * 1.0 / o->counters[1],
+			counters[2] * 1.0 / o->counters[2]
+		};
+	}
 };
 
 template<int event1 = PAPI_L1_DCM, int event2 = PAPI_L2_DCM, int event3 = PAPI_L3_TCM>

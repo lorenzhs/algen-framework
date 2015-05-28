@@ -19,6 +19,9 @@ public:
 	virtual void max(const benchmark_result *const other) = 0;
 	virtual void div(const int divisor) = 0;
 
+	virtual std::vector<double> compare_to(const benchmark_result *other) = 0;
+	virtual std::ostream& print_component(int component, std::ostream &os) = 0;
+
 	virtual std::ostream& print(std::ostream &os) const = 0;
 	virtual std::ostream& result(std::ostream &os) const = 0;
 protected:
@@ -60,6 +63,14 @@ public:
 	const benchmark_result *const maximum() const { return max; }
 	const benchmark_result *const average() const { return avg; }
 
+	std::vector<double> compare_to(const benchmark_result_aggregate &other) {
+		return avg->compare_to(other.avg);
+	}
+
+	std::ostream& print_component(int component, std::ostream &os) {
+		return avg->print_component(component, os);
+	}
+
 	template <typename Configuration>
 	void set_properties(const std::string &benchmark_name,
 		const std::string &instance_desc,
@@ -90,10 +101,14 @@ public:
 		return configuration;
 	}
 
+	std::ostream& describe(std::ostream &os) const {
+		return os << "Benchmark '" << term_bold << benchmark << term_reset
+		          << "' on instance '" << term_bold << instance << term_reset
+		          << "' with configuration '" term_bold << configuration << term_reset << "': ";
+	}
+
 	friend std::ostream& operator<<(std::ostream &os, const benchmark_result_aggregate &res) {
-		os << "Benchmark '" << term_bold << res.benchmark << term_reset
-		   << "' on instance '" << term_bold << res.instance << term_reset
-		   << "' with configuration '" term_bold << res.configuration << term_reset << "': ";
+		res.describe(os);
 		if (res.num_results > 1) {
 			os << res.num_results << " runs.";
 			os << std::endl << "\tmin: "; res.min->print(os);
