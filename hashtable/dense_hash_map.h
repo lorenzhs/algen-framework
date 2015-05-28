@@ -30,9 +30,9 @@ public:
         list.register_contender(Factory("dense_hash_map", "dense_hash_map",
             [](){ return new dense_hash_map<Key, T>(); }
         ));
-        list.register_contender(Factory("dense_hash_map with std::allocator", "dense_hash_map std_allocator",
-            [](){ return new dense_hash_map<Key, T, std::hash<Key>, std::equal_to<Key>, std::allocator<std::pair<const Key, T>>>(); }
-        ));
+        //list.register_contender(Factory("dense_hash_map with std::allocator", "dense_hash_map std_allocator",
+        //    [](){ return new dense_hash_map<Key, T, std::hash<Key>, std::equal_to<Key>, std::allocator<std::pair<const Key, T>>>(); }
+        //));
     }
 
     T& operator[](const Key &key) {
