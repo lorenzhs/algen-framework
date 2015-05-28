@@ -153,12 +153,9 @@ int main(int argc, char** argv) {
 		results.emplace_back(std::move(ds_results));
 	}
 
-	// TODO: parameterize which to compare if more than two?
-	if (results.size() == 2) {
-		common::comparison comparison(results[0], results[1]);
-		comparison.compare();
-		comparison.print(std::cout, cutoff, max_results);
-	}
+	common::comparison comparison(results, 0);
+	comparison.compare();
+	comparison.print(std::cout, cutoff, max_results);
 
 	for (auto &ds_results : results)
 		for (auto &result : ds_results)
