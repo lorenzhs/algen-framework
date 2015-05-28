@@ -1,4 +1,7 @@
-CX ?= clang++
+# g++ >= 4.9 or clang++ >= 3.4 is required to build this.
+# clang++ 3.4 and 3.5 cannot build the compare target with debug information.
+# Either remove "-g" from the flags or use clang++ >= 3.6 (or g++).
+CX ?= clang++-3.6
 CC ?= gcc
 
 SANITIZER ?= address
@@ -6,7 +9,7 @@ SANITIZER ?= address
 COMMONFLAGS = -std=c++1y -Wall -Werror
 CFLAGS = ${COMMONFLAGS} -Ofast -g -DNDEBUG
 DEBUGFLAGS = ${COMMONFLAGS} -O0 -ggdb3
-LDFLAGS = -lpapi
+LDFLAGS = -lpapi -lboost_serialization
 MALLOC_LDFLAGS = -ldl
 
 all: bench_tmp
@@ -32,6 +35,9 @@ debug_malloc: bench_tmp.cpp */*.h malloc_count.o
 sanitize: bench_tmp.cpp */*.h
 	$(CX) $(CFLAGS) -fsanitize=${SANITIZER} -o $@ $< $(LDFLAGS)
 	./$@
+
+compare: compare.cpp */*.h
+	$(CX) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 run: bench_tmp
 	./bench_tmp

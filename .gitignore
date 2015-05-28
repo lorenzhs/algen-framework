@@ -7,3 +7,5 @@ massif.out.*
 *.o
 debug*
 sanitize
+compare
+compare_*

@@ -4,6 +4,10 @@
 
 #include <papi.h>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
+
 #include "common/arg_parser.h"
 #include "common/benchmark.h"
 #include "common/comparison.h"
@@ -22,6 +26,7 @@ void usage(char* name) {
 	using std::endl;
 	cout << "Usage: " << name << " <options>" << endl << endl
 		 << "Options:" << endl
+		 << "-o <filename> result serialization filename (default: data.txt)" << endl
 		 << "-p <prefix>   result filename prefix (default: results_)" << endl
 		 << "-n <int>      number of repetitions for each benchmark (default: 1)" << endl
 		 << "-c <double>   cutoff, at which difference ratio to stop printing (deafult: 1.01)" << endl
@@ -38,7 +43,8 @@ void usage(char* name) {
 int main(int argc, char** argv) {
 	common::arg_parser args(argc, argv);
 	if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
-	const std::string resultfn_prefix = args.get<std::string>("p", "results_");
+	const std::string resultfn_prefix = args.get<std::string>("p", "results_"),
+		serializationfn = args.get<std::string>("o", "data.txt");
 	const size_t repetitions = args.get<size_t>("n", 1),
 		         max_results = args.get<size_t>("m", 25);
 	const double cutoff = args.get<double>("c", 1.01);
@@ -156,6 +162,11 @@ int main(int argc, char** argv) {
 	common::comparison comparison(results, 0);
 	comparison.compare();
 	comparison.print(std::cout, cutoff, max_results);
+
+	// Serialize results
+	std::ofstream ofs(serializationfn);
+	boost::archive::text_oarchive oa(ofs);
+	oa << results;
 
 	for (auto &ds_results : results)
 		for (auto &result : ds_results)

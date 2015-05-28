@@ -4,9 +4,10 @@
 #include <ostream>
 #include <papi.h>
 
-#ifdef MALLOC_INSTR
 #include "../malloc_count/malloc_count.h"
-#endif
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 
 #include "timer.h"
 #include "benchmark.h"
@@ -23,9 +24,11 @@ public:
 };
 
 class timer_result : public benchmark_result {
+	friend class boost::serialization::access;
 	double duration;
 public:
 	timer_result(double d) : duration(d) {}
+	timer_result() : duration(0) {}
 	virtual ~timer_result() {}
 	std::ostream& print(std::ostream& os) const {
 		return os << duration << "ms";
@@ -54,6 +57,12 @@ public:
 		assert(component == 0);
 		return os << duration << "ms";
 	}
+
+	template <typename Archive>
+	void serialize(Archive & ar, const unsigned int file_version) {
+		ar & boost::serialization::base_object<benchmark_result>(*this);
+		ar & duration;
+	}
 };
 
 class timer_instrumentation : public instrumentation {
@@ -71,9 +80,11 @@ private:
 };
 
 class papi_result : public benchmark_result {
+	friend class boost::serialization::access;
 	long long counters[3];
 	int events[3];
 public:
+	papi_result() : counters{0,0,0}, events{0,0,0} {}
 	papi_result(int const *e, bool set_to_max = false) {
 		long long val = set_to_max ? ((long long)1)<<62 : 0;
 		counters[0] = val; counters[1] = val; counters[2] = val;
@@ -144,6 +155,12 @@ public:
 			divide(counters[2], o->counters[2])
 		};
 	}
+
+	template <typename Archive>
+	void serialize(Archive & ar, const unsigned int file_version) {
+		ar & boost::serialization::base_object<benchmark_result>(*this);
+		ar & events & counters;
+	}
 };
 
 template<int event1 = PAPI_L1_DCM, int event2 = PAPI_L2_DCM, int event3 = PAPI_L3_TCM>
@@ -187,10 +204,11 @@ using papi_instrumentation_cache = papi_instrumentation<>;
 using papi_instrumentation_instr = papi_instrumentation<PAPI_BR_MSP, PAPI_TOT_INS, PAPI_TOT_CYC>;
 
 
-#ifdef MALLOC_INSTR
 class memory_result : public benchmark_result {
+	friend class boost::serialization::access;
 	size_t total, peak, count;
 public:
+	memory_result() : total(0), peak(0), count(0) {}
 	memory_result(size_t total, size_t peak, size_t count) : total(total), peak(peak), count(count) {}
 	virtual ~memory_result() {}
 
@@ -249,6 +267,12 @@ public:
 		default: assert(false); return os;
 		}
 	}
+
+	template <typename Archive>
+	void serialize(Archive & ar, const unsigned int file_version) {
+		ar & boost::serialization::base_object<benchmark_result>(*this);
+		ar & total & peak & count;
+	}
 };
 
 class memory_instrumentation : public instrumentation {
@@ -286,6 +310,17 @@ private:
 	size_t total;
 	size_t count;
 };
-#endif
 
 }
+
+
+BOOST_CLASS_EXPORT_KEY(common::benchmark_result);
+
+BOOST_CLASS_EXPORT_KEY(common::timer_result);
+BOOST_CLASS_EXPORT_IMPLEMENT(common::timer_result);
+
+BOOST_CLASS_EXPORT_KEY(common::papi_result);
+BOOST_CLASS_EXPORT_IMPLEMENT(common::papi_result);
+
+BOOST_CLASS_EXPORT_KEY(common::memory_result);
+BOOST_CLASS_EXPORT_IMPLEMENT(common::memory_result);

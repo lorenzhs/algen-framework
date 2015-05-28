@@ -5,12 +5,15 @@
 #include <sstream>
 #include <type_traits>
 
+#include <boost/serialization/base_object.hpp>
+
 #include "contenders.h"
 #include "terminal.h"
 
 namespace common {
 
 class benchmark_result {
+	friend class boost::serialization::access;
 public:
 	virtual ~benchmark_result() {}
 
@@ -24,6 +27,9 @@ public:
 
 	virtual std::ostream& print(std::ostream &os) const = 0;
 	virtual std::ostream& result(std::ostream &os) const = 0;
+
+	template <typename Archive>
+	void serialize(Archive & ar, const unsigned int file_version) {};
 protected:
 	// remove spaces for sqlplottools
 	template <typename String> // URef
@@ -39,9 +45,12 @@ protected:
 };
 
 class benchmark_result_aggregate {
+	friend class boost::serialization::access;
 public:
+	benchmark_result_aggregate() : min(nullptr), max(nullptr), avg(nullptr), num_results(0) {}
 	benchmark_result_aggregate(benchmark_result *min, benchmark_result *max, benchmark_result *avg)
 		: min(min), max(max), avg(avg), num_results(0) {}
+	benchmark_result_aggregate(const benchmark_result_aggregate &other) = default;
 	benchmark_result_aggregate(benchmark_result_aggregate&& other) = default;
 	void destroy() { // can't put this in d'tor because copies are made
 		if (min != nullptr) delete min; min = nullptr;
@@ -119,6 +128,12 @@ public:
 		}
 		return os;
 	}
+
+	template <typename Archive>
+	void serialize(Archive & ar, const unsigned int file_version) {
+		ar & benchmark & instance & configuration;
+		ar & min & max & avg & num_results;
+	};
 protected:
 	std::string benchmark, instance, configuration;
 	benchmark_result *min, *max, *avg;
