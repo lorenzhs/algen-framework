@@ -10,6 +10,7 @@
 #include "common/contenders.h"
 #include "common/instrumentation.h"
 #include "common/terminal.h"
+#include "hashtable/dense_hash_map.h"
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
 
@@ -41,6 +42,7 @@ int main(int argc, char** argv) {
 	// Set up data structure contenders
 	common::contender_list<HashTable> contenders;
 	hashtable::unordered_map<int, int>::register_contenders(contenders);
+	hashtable::dense_hash_map<int, int>::register_contenders(contenders);
 
 	// Register Benchmarks
 	common::contender_list<Benchmark> benchmarks;
