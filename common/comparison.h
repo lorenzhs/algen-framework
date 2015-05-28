@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <limits>
 #include <tuple>
 #include <vector>
 
@@ -24,7 +26,12 @@ public:
 			auto similarities = first[i].compare_to(second[i]);
 			int index = 0;
 			for (double sim : similarities) {
-				if (sim < 1) sim = 1/sim;
+				// if 0, nan, inf
+				if (std::fpclassify(sim) != FP_NORMAL)
+					sim = std::numeric_limits<double>::infinity();
+				else if (sim < 1)
+					// swap around order of comparison
+					sim = 1/sim;
 				similarity.push_back(std::make_tuple(i, sim, index++));
 			};
 		}

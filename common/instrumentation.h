@@ -134,10 +134,14 @@ public:
 
 	virtual std::vector<double> compare_to(const benchmark_result *other) {
 		const papi_result *o = dynamic_cast<const papi_result*>(other);
+		auto divide = [](long long a, long long b) -> double {
+			if (a == 0 && b == 0) return 1.0;
+			else return (a * 1.0) / b;
+		};
 		return std::vector<double>{
-			counters[0] * 1.0 / o->counters[0],
-			counters[1] * 1.0 / o->counters[1],
-			counters[2] * 1.0 / o->counters[2]
+			divide(counters[0], o->counters[0]),
+			divide(counters[1], o->counters[1]),
+			divide(counters[2], o->counters[2])
 		};
 	}
 };
