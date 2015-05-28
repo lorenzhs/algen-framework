@@ -27,6 +27,9 @@ public:
         list.register_contender(Factory("sparse_hash_map", "sparse_hash_map",
             [](){ return new sparse_hash_map<Key, T>(); }
         ));
+        list.register_contender(Factory("sparse_hash_map with std::allocator", "sparse_hash_map std_allocator",
+            [](){ return new sparse_hash_map<Key, T, std::hash<Key>, std::equal_to<Key>, std::allocator<std::pair<const Key, T>>>(); }
+        ));
     }
 
     T& operator[](const Key &key) {
