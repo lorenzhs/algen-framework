@@ -24,7 +24,7 @@ public:
     // Register all contenders in the list
     static void register_contenders(common::contender_list<hashtable<Key, T>> &list) {
         using Factory = common::contender_factory<hashtable<Key, T>>;
-        list.register_contender(Factory("sparse_hash_map", "sparse_hash_map",
+        list.register_contender(Factory("sparse_hash_map", "sparse-hash-map",
             [](){ return new sparse_hash_map<Key, T>(); }
         ));
         //list.register_contender(Factory("sparse_hash_map with std::allocator", "sparse_hash_map std_allocator",

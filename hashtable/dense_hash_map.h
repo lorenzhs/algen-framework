@@ -27,7 +27,7 @@ public:
     // Register all contenders in the list
     static void register_contenders(common::contender_list<hashtable<Key, T>> &list) {
         using Factory = common::contender_factory<hashtable<Key, T>>;
-        list.register_contender(Factory("dense_hash_map", "dense_hash_map",
+        list.register_contender(Factory("dense_hash_map", "dense-hash-map",
             [](){ return new dense_hash_map<Key, T>(); }
         ));
         //list.register_contender(Factory("dense_hash_map with std::allocator", "dense_hash_map std_allocator",
