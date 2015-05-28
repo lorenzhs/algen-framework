@@ -26,6 +26,9 @@ bench_tmp_malloc: bench_tmp.cpp */*.h malloc_count.o
 debug: bench_tmp.cpp */*.h
 	$(CX) $(DEBUGFLAGS) -o $@ $< $(LDFLAGS)
 
+debug_malloc: bench_tmp.cpp */*.h malloc_count.o
+	$(CX) $(DEBUGFLAGS) -DMALLOC_INSTR -o $@ $< malloc_count.o $(LDFLAGS) $(MALLOC_LDFLAGS)
+
 sanitize: bench_tmp.cpp */*.h
 	$(CX) $(CFLAGS) -fsanitize=${SANITIZER} -o $@ $< $(LDFLAGS)
 	./$@

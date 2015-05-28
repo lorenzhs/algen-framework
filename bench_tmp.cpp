@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 	const size_t repetitions = args.get<size_t>("n", 1),
 		         max_results = args.get<size_t>("m", 25);
 	const double cutoff = args.get<double>("c", 1.01);
+	__attribute__((unused))
 	const bool disable_timer      = args.is_set("nt"),
 			   disable_papi_cache = args.is_set("npc") || args.is_set("np"),
 			   disable_papi_instr = args.is_set("npi") || args.is_set("np");
