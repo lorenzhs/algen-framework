@@ -15,6 +15,7 @@
 int main(int argc, char** argv) {
 	common::arg_parser args(argc, argv);
 	std::string resultfn_prefix = args.get<std::string>("p", "results_");
+	size_t repetitions = args.get<size_t>("n", 1);
 
 	using HashTable = hashtable::hashtable<int, int>;
 	using Benchmark = common::benchmark<HashTable, size_t>;
@@ -43,7 +44,7 @@ int main(int argc, char** argv) {
 		[](){ return new common::memory_instrumentation(); });
 #endif
 
-	std::vector<std::vector<common::benchmark_result*>> results;
+	std::vector<std::vector<common::benchmark_result_aggregate>> results;
 	results.reserve(contenders.end() - contenders.begin());
 
 	// Run all combinations!
@@ -58,54 +59,71 @@ int main(int argc, char** argv) {
 		if (!first_iteration) res_flags |= std::fstream::app;
 		else first_iteration = false;
 
-		std::vector<common::benchmark_result*> ds_results;
+		std::vector<common::benchmark_result_aggregate> ds_results;
 
-		for (auto instrumentation : instrumentations) {
+		for (auto instrumentation_factory : instrumentations) {
 			std::cout << term_bold << common::term_set_colour(common::term_colour::fg_yellow)
 					  << "Benchmarking " << datastructure_factory.description()
-					  << " with " << instrumentation.description() << " instrumentation"
+					  << " with " << instrumentation_factory.description() << " instrumentation"
 					  << term_reset << std::endl;
 
-			std::fstream res(resultfn_prefix + instrumentation.key() + ".txt", res_flags);
+			std::fstream res(resultfn_prefix + instrumentation_factory.key() + ".txt", res_flags);
+
+			auto instrumentation = instrumentation_factory();
 
 			for (auto benchmark_factory : benchmarks) {
 				auto benchmark = benchmark_factory();
 				// dry run with first configuration to prevent skews
 				auto initial_configuration = *(benchmark->begin());
 				delete benchmark->run(datastructure_factory, instrumentation,
-					initial_configuration, benchmark_factory);
+					initial_configuration);
 
 				// Run benchmark on all configurations
 				for (auto configuration : *benchmark) {
-					// We need to pass in the benchmark factory here so that the
-					// result object can know its name...
-					auto t = benchmark->run(datastructure_factory, instrumentation,
-						configuration, benchmark_factory);
-					std::cout << *t << std::endl;
+					common::benchmark_result_aggregate aggregate(instrumentation->new_result(true),
+						instrumentation->new_result(), instrumentation->new_result());
 
-					// Print RESULT lines for sqlplot-tools
-					res << "RESULT"
-						<< " config=" << configuration
-						<< " ds=" << datastructure_factory.key()
-						<< " bench=" << benchmark_factory.key();
-					t->result(res);
-					res << std::endl;
+					for (size_t rep = 0; rep < repetitions; ++rep) {
+						// We need to pass in the benchmark factory here so that the
+						// result object can know its name...
+						auto t = benchmark->run(datastructure_factory, instrumentation, configuration);
+						aggregate.add_result(t);
 
-					ds_results.push_back(t);
+						// Print RESULT lines for sqlplot-tools
+						res << "RESULT"
+							<< " config=" << configuration
+							<< " ds=" << datastructure_factory.key()
+							<< " bench=" << benchmark_factory.key();
+						t->result(res);
+						res << std::endl;
+						delete t;
+					}
+
+					aggregate.finish();
+					aggregate.set_properties(benchmark_factory.description(),
+						datastructure_factory.description(), configuration);
+
+					// Aggregate results of multiple runs
+					std::cout << aggregate << std::endl;
+					ds_results.emplace_back(std::move(aggregate));
 				}
 				delete benchmark;
 				std::cout << std::endl;
 			}
 			res.close();
+			delete instrumentation;
 			std::cout << std::endl;
 		}
 
 		results.emplace_back(std::move(ds_results));
 	}
 
-	for (auto ds_results : results)
-		for (auto result : ds_results)
-			delete result;
+	// TODO: compare results
+
+	for (auto &ds_results : results)
+		for (auto &result : ds_results)
+			result.destroy();
+
 
 	// Shut down PAPI if it was used
 	if (PAPI_is_initialized() != PAPI_NOT_INITED)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <ostream>
 #include <papi.h>
 
@@ -17,6 +18,7 @@ public:
 	virtual void setup() = 0;
 	virtual void finish() = 0;
 	virtual benchmark_result* result() const = 0;
+	virtual benchmark_result* new_result(bool set_to_max = false) const = 0;
 	virtual ~instrumentation() {}
 };
 
@@ -31,6 +33,11 @@ public:
 	std::ostream& result(std::ostream& os) const {
 		return os << " time=" << duration;
 	}
+
+	virtual void add(const benchmark_result *const other) { duration += ((timer_result*)other)->duration; };
+	virtual void min(const benchmark_result *const other) { duration = std::min(duration, ((timer_result*)other)->duration); };
+	virtual void max(const benchmark_result *const other) { duration = std::max(duration, ((timer_result*)other)->duration); };
+	virtual void div(const int divisor) { duration /= divisor; };
 };
 
 class timer_instrumentation : public instrumentation {
@@ -38,6 +45,9 @@ public:
 	void setup() { t.reset(); }
 	void finish() { value = t.get(); }
 	virtual timer_result* result() const { return new timer_result(value); }
+	virtual benchmark_result* new_result(bool set_to_max = false) const {
+		return new timer_result(set_to_max ? 1e100 : 0);
+	};
 	virtual ~timer_instrumentation() = default;
 private:
 	timer t;
@@ -48,6 +58,11 @@ class papi_result : public benchmark_result {
 	long long counters[3];
 	int events[3];
 public:
+	papi_result(int const *e, bool set_to_max = false) {
+		long long val = set_to_max ? ((long long)1)<<62 : 0;
+		counters[0] = val; counters[1] = val; counters[2] = val;
+		events[0] = e[0]; events[1] = e[1]; events[2] = e[2];
+	}
 	papi_result(int const *e, long long const *c) {
 		counters[0] = c[0];	counters[1] = c[1];	counters[2] = c[2];
 		events[0] = e[0]; events[1] = e[1]; events[2] = e[2];
@@ -71,6 +86,30 @@ public:
 				  << " " << format_result_column(describe_event(events[1])) << "=" << counters[1]
 				  << " " << format_result_column(describe_event(events[2])) << "=" << counters[2];
 	}
+
+	virtual void add(const benchmark_result *const other) {
+		const papi_result* o = dynamic_cast<const papi_result*>(other);
+		counters[0] += o->counters[0];
+		counters[1] += o->counters[1];
+		counters[2] += o->counters[2];
+	};
+	virtual void min(const benchmark_result *const other) {
+		const papi_result* o = dynamic_cast<const papi_result*>(other);
+		counters[0] = std::min(counters[0], o->counters[0]);
+		counters[1] = std::min(counters[1], o->counters[1]);
+		counters[2] = std::min(counters[2], o->counters[2]);
+	};
+	virtual void max(const benchmark_result *const other) {
+		const papi_result* o = dynamic_cast<const papi_result*>(other);
+		counters[0] = std::max(counters[0], o->counters[0]);
+		counters[1] = std::max(counters[1], o->counters[1]);
+		counters[2] = std::max(counters[2], o->counters[2]);
+	};
+	virtual void div(const int divisor) {
+		counters[0] /= divisor;
+		counters[1] /= divisor;
+		counters[2] /= divisor;
+	};
 };
 
 template<int event1 = PAPI_L1_DCM, int event2 = PAPI_L2_DCM, int event3 = PAPI_L3_TCM>
@@ -104,6 +143,10 @@ public:
 	papi_result* result() const {
 		return new papi_result(events, counters);
 	}
+
+	virtual benchmark_result* new_result(bool set_to_max = false) const {
+		return new papi_result(events, set_to_max);
+	};
 };
 
 using papi_instrumentation_cache = papi_instrumentation<>;

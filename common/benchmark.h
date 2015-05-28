@@ -13,6 +13,53 @@ namespace common {
 class benchmark_result {
 public:
 	virtual ~benchmark_result() {}
+
+	virtual void add(const benchmark_result *const other) = 0;
+	virtual void min(const benchmark_result *const other) = 0;
+	virtual void max(const benchmark_result *const other) = 0;
+	virtual void div(const int divisor) = 0;
+
+	virtual std::ostream& print(std::ostream &os) const = 0;
+	virtual std::ostream& result(std::ostream &os) const = 0;
+protected:
+	// remove spaces for sqlplottools
+	template <typename String> // URef
+	String&& format_result_column(String &&str) const {
+		size_t pos = 0;
+
+		while ((pos = str.find(" ", pos)) != std::string::npos) {
+			str.replace(pos, 1, "_");
+			pos++;
+		}
+		return std::forward<String>(str);
+	}
+};
+
+class benchmark_result_aggregate {
+public:
+	benchmark_result_aggregate(benchmark_result *min, benchmark_result *max, benchmark_result *avg)
+		: min(min), max(max), avg(avg), num_results(0) {}
+	benchmark_result_aggregate(benchmark_result_aggregate&& other) = default;
+	void destroy() { // can't put this in d'tor because copies are made
+		if (min != nullptr) delete min; min = nullptr;
+		if (max != nullptr) delete max; max = nullptr;
+		if (avg != nullptr) delete avg; avg = nullptr;
+	}
+	void add_result(const benchmark_result *const result) {
+		++num_results;
+		min->min(result);
+		max->max(result);
+		avg->add(result);
+	}
+
+	void finish() {
+		avg->div(num_results);
+	}
+
+	const benchmark_result *const minimum() const { return min; }
+	const benchmark_result *const maximum() const { return max; }
+	const benchmark_result *const average() const { return avg; }
+
 	template <typename Configuration>
 	void set_properties(const std::string &benchmark_name,
 		const std::string &instance_desc,
@@ -43,28 +90,24 @@ public:
 		return configuration;
 	}
 
-	virtual std::ostream& print(std::ostream &os) const = 0;
-	virtual std::ostream& result(std::ostream &os) const = 0;
-	friend std::ostream& operator<<(std::ostream &os, const benchmark_result &res) {
+	friend std::ostream& operator<<(std::ostream &os, const benchmark_result_aggregate &res) {
 		os << "Benchmark '" << term_bold << res.benchmark << term_reset
 		   << "' on instance '" << term_bold << res.instance << term_reset
 		   << "' with configuration '" term_bold << res.configuration << term_reset << "': ";
-		return res.print(os);
+		if (res.num_results > 1) {
+			os << res.num_results << " runs.";
+			os << std::endl << "\tmin: "; res.min->print(os);
+			os << std::endl << "\tmax: "; res.max->print(os);
+			os << std::endl << "\tavg: "; res.avg->print(os);
+		} else { // only one run, they're all equal
+			res.min->print(os);
+		}
+		return os;
 	}
 protected:
-	// remove spaces for sqlplottools
-	template <typename String> // URef
-	String&& format_result_column(String &&str) const {
-		size_t pos = 0;
-
-		while ((pos = str.find(" ", pos)) != std::string::npos) {
-			str.replace(pos, 1, "_");
-			pos++;
-		}
-		return std::forward<String>(str);
-	}
-
 	std::string benchmark, instance, configuration;
+	benchmark_result *min, *max, *avg;
+	int num_results;
 };
 
 template <typename DataStructure, typename Configuration>
@@ -98,28 +141,23 @@ public:
 
 	template <typename Instrumentation>
 	auto run(contender_factory<DataStructure> &factory,
-		contender_factory<Instrumentation> &instrumentation,
-		Configuration &configuration,
-		contender_factory<benchmark> &benchmark_factory)
-		-> decltype(instrumentation()->result())
+		Instrumentation *instrumentation,
+		Configuration &configuration)
+		-> decltype(instrumentation->result())
 	{
 		// Create data structure and set up benchmark
 		DataStructure *instance = factory();
 		if (setup) setup(*instance, configuration);
 
 		// Set up instrumentation
-		Instrumentation *instr = instrumentation();
-		instr->setup();
+		instrumentation->setup();
 
 		// Run benchmark
 		function(*instance, configuration);
 
 		// stop and destroy instrumentation
-		instr->finish();
-		auto result = instr->result();
-		delete instr;
-
-		result->set_properties(benchmark_factory.description(), factory.description(), configuration);
+		instrumentation->finish();
+		auto result = instrumentation->result();
 
 		// Tear down benchmark and destroy data structure
 		if (teardown) teardown(*instance, configuration);
