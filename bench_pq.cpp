@@ -10,6 +10,7 @@
 #include "common/comparison.h"
 #include "common/contenders.h"
 #include "common/experiments.h"
+#include "common/hack.h"
 #include "common/instrumentation.h"
 
 #include "pq/priority_queue.h"
@@ -53,7 +54,8 @@ int main(int argc, char** argv) {
                disable_papi_instr = args.is_set("npi") || args.is_set("np");
 
     using PQ = pq::priority_queue<int>;
-    using Benchmark = common::benchmark<PQ, size_t>;
+    using Configuration = std::pair<size_t, size_t>;
+    using Benchmark = common::benchmark<PQ, Configuration>;
 
     // Set up data structure contenders
     common::contender_list<PQ> contenders;
@@ -89,7 +91,7 @@ int main(int argc, char** argv) {
 
     std::vector<std::vector<common::benchmark_result_aggregate>> results;
 
-    common::experiment_runner<PQ, size_t> runner(contenders, instrumentations, benchmarks, results);
+    common::experiment_runner<PQ, Configuration> runner(contenders, instrumentations, benchmarks, results);
     runner.run(repetitions, resultfn_prefix);
 
     if (contenders.size() > 1) {

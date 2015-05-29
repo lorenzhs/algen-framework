@@ -1,11 +1,19 @@
 #pragma once
 
+#include <utility>
+
+#include "../common/benchmark.h"
+#include "../common/contenders.h"
+
+#include "microbenchmark.h"
+
 namespace pq {
 
 template <typename PQ>
 class heapsort {
 public:
-    using Benchmark = common::benchmark<PQ, size_t>;
+    using Configuration = std::pair<size_t, size_t>;
+    using Benchmark = common::benchmark<PQ, Configuration>;
     using BenchmarkFactory = common::contender_factory<Benchmark>;
 
     template<typename It>
@@ -23,18 +31,22 @@ public:
 
 
     static void register_benchmarks(common::contender_list<Benchmark> &benchmarks) {
-        const std::vector<size_t> sizes{1<<16, 1<<18, 1<<20, /*1<<22, 1<<24, 1<<26*/};
-        
-        common::register_benchmark("heapsort", "heapsort", [](PQ&, size_t size, void*) {
-            return new typename PQ::value_type[size];
-            // TODO: add predictable pseudorandom data
-        }, [](PQ &queue, size_t size, void* data) {
-            assert(data != nullptr);
-            auto ptr = static_cast<typename PQ::value_type*>(data);
-            heapsort::sort(queue, ptr, ptr+size);
-        }, [](PQ&, size_t, void* data) {
-            delete[] static_cast<typename PQ::value_type*>(data);
-        }, sizes, benchmarks);
+        const std::vector<Configuration> configs{
+            std::make_pair(1<<16, 1234567),
+            std::make_pair(1<<18, 0xBEEF),
+            std::make_pair(1<<20, 0xC0FFEE),
+            /*1<<22, 1<<24, 1<<26*/};
+
+        common::register_benchmark("heapsort", "heapsort",
+            microbenchmark<PQ>::fill_with_permutation,
+            [](PQ &queue, Configuration config, void* data) {
+                assert(data != nullptr);
+                auto ptr = static_cast<typename PQ::value_type*>(data);
+                heapsort::sort(queue, ptr, ptr+config.first);
+            },
+            [](PQ&, Configuration, void* data) {
+                delete[] static_cast<typename PQ::value_type*>(data);
+            }, configs, benchmarks);
     }
 };
 
