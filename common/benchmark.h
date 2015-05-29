@@ -83,10 +83,12 @@ public:
     template <typename Configuration>
     void set_properties(const std::string &benchmark_name,
         const std::string &instance_desc,
-        const Configuration &configuration_obj)
+        const Configuration &configuration_obj,
+        const std::string &instrumentation_desc)
     {
         benchmark = benchmark_name;
         instance = instance_desc;
+        instrumentation = instrumentation_desc;
 
         // convert configuration object into a string
         // this might be a trivial type (e.g. size_t)
@@ -109,11 +111,16 @@ public:
     const std::string& configuration_desc() const {
         return configuration;
     }
+    const std::string& instrumentation_desc() const {
+        return instrumentation;
+    }
 
     std::ostream& describe(std::ostream &os) const {
         return os << "Benchmark '" << term::bold << benchmark << term::reset
                   << "' on instance '" << term::bold << instance << term::reset
-                  << "' with configuration '" << term::bold << configuration << term::reset << "': ";
+                  << "' with configuration '" << term::bold << configuration << term::reset
+                  << "' using '" << term::bold << instrumentation << term::reset
+                  << "' instrumentation: ";
     }
 
     friend std::ostream& operator<<(std::ostream &os, const benchmark_result_aggregate &res) {
@@ -131,11 +138,11 @@ public:
 
     template <typename Archive>
     void serialize(Archive & ar, const unsigned int) {
-        ar & benchmark & instance & configuration;
+        ar & benchmark & instance & configuration & instrumentation;
         ar & min & max & avg & num_results;
     }
 protected:
-    std::string benchmark, instance, configuration;
+    std::string benchmark, instance, configuration, instrumentation;
     benchmark_result *min, *max, *avg;
     int num_results;
 };

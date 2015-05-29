@@ -84,7 +84,8 @@ public:
 
                         aggregate.finish();
                         aggregate.set_properties(benchmark_factory.description(),
-                            datastructure_factory.description(), configuration);
+                            datastructure_factory.description(), configuration,
+                            instrumentation_factory.description());
 
                         // Aggregate results of multiple runs
                         std::cout << aggregate << std::endl;
