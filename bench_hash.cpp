@@ -21,8 +21,8 @@ void usage(char* name) {
 	using std::endl;
 	cout << "Usage: " << name << " <options>" << endl << endl
 		 << "Options:" << endl
-		 << "-o <filename> result serialization filename (default: data.txt)" << endl
-		 << "-p <prefix>   result filename prefix (default: results_)" << endl
+		 << "-o <filename> result serialization filename (default: data_hash.txt)" << endl
+		 << "-p <prefix>   result filename prefix (default: results_hash_)" << endl
 		 << "-n <int>      number of repetitions for each benchmark (default: 1)" << endl
 		 << "-c <double>   cutoff, at which difference ratio to stop printing (deafult: 1.01)" << endl
 		 << "-m <int>      maximum number of differences to print (default: 25)" << endl
@@ -38,8 +38,8 @@ void usage(char* name) {
 int main(int argc, char** argv) {
 	common::arg_parser args(argc, argv);
 	if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
-	const std::string resultfn_prefix = args.get<std::string>("p", "results_"),
-		serializationfn = args.get<std::string>("o", "data.txt");
+	const std::string resultfn_prefix = args.get<std::string>("p", "results_hash_"),
+		serializationfn = args.get<std::string>("o", "data_hash.txt");
 	const size_t repetitions = args.get<size_t>("n", 1),
 		         max_results = args.get<size_t>("m", 25);
 	const double cutoff = args.get<double>("c", 1.01);
