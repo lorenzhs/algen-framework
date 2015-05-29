@@ -12,9 +12,9 @@
 namespace pq {
 
 template<typename T,
-	     typename Cmp_Fn = std::less<T>,
-	     typename Tag = __gnu_pbds::pairing_heap_tag,
-	     typename Allocator = std::allocator<char>>
+         typename Cmp_Fn = std::less<T>,
+         typename Tag = __gnu_pbds::pairing_heap_tag,
+         typename Allocator = std::allocator<char>>
 class gnu_pq : public priority_queue<T> {
 public:
     gnu_pq() : queue() {}
@@ -54,7 +54,7 @@ public:
     void emplace(Args&&... args) {
         queue.emplace(std::forward<Args>(args)...);
     }
- 
+
     /// Deletes the top element
     void pop() override {
         queue.pop();

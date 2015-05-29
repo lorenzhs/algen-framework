@@ -19,7 +19,7 @@ public:
 
     /// Retrieve a key's value by rvalue reference, or insert a default-constructed value if not found
     virtual T& operator[](Key &&key) = 0;
-    
+
     /// Find a key in the hash table
     virtual maybe<T> find(const Key &key) = 0;
 

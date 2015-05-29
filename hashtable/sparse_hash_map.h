@@ -8,7 +8,7 @@
 #include "hashtable.h"
 
 namespace hashtable {
-    
+
 template <typename Key,
           typename T,
           typename HashFcn = std::hash<Key>,
