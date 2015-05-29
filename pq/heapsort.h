@@ -37,8 +37,24 @@ public:
             std::make_pair(1<<20, 0xC0FFEE),
             /*1<<22, 1<<24, 1<<26*/};
 
-        common::register_benchmark("heapsort", "heapsort",
-            microbenchmark<PQ>::fill_with_permutation,
+        common::register_benchmark("heapsort permutation", "heapsort-perm",
+            microbenchmark<PQ>::fill_data_permutation,
+            [](PQ &queue, Configuration config, void* data) {
+                assert(data != nullptr);
+                auto ptr = static_cast<typename PQ::value_type*>(data);
+                heapsort::sort(queue, ptr, ptr+config.first);
+            },
+            [](PQ&, Configuration config, void* data) {
+                auto ptr = static_cast<typename PQ::value_type*>(data);
+                // Check that data is sorted
+                for (size_t i = 0; i < config.first; ++i) {
+                    assert(ptr[i] == static_cast<typename PQ::value_type>(config.first - i - 1));
+                }
+                delete[] ptr;
+            }, configs, benchmarks);
+
+        common::register_benchmark("heapsort random", "heapsort-rand",
+            microbenchmark<PQ>::fill_data_random,
             [](PQ &queue, Configuration config, void* data) {
                 assert(data != nullptr);
                 auto ptr = static_cast<typename PQ::value_type*>(data);
