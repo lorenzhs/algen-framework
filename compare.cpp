@@ -12,19 +12,21 @@
 #include "common/comparison.h"
 #include "common/instrumentation.h"
 
-void usage() {
-    using std::cout, std::endl;
+void usage(char* name) {
+    using std::cout;
+    using std::endl;
     cout << "Usage: " << name << " <options>" << endl << endl
          << "Options:" << endl
          << "-i <filename> input serialization filename (default: data.txt)" << endl
          << "-c <double>   cutoff, at which difference ratio to stop printing (deafult: 1.01)" << endl
          << "-m <int>      maximum number of differences to print (default: 25)" << endl
-         << "-b <int>      which contender to compare to the others (default: 0)" << endl
+         << "-b <int>      which contender to compare to the others (default: 0)" << endl;
     exit(0);
 }
 
 int main(int argc, char** argv) {
     common::arg_parser args(argc, argv);
+    if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
     const int max_results = args.get<int>("m", 25),
               base_contender = args.get<int>("b", 0);
     const double cutoff = args.get<double>("c", 1.01);

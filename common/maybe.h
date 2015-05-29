@@ -80,7 +80,7 @@ struct maybe<void> {
     maybe() {}
 
     template <typename T>
-    maybe(const T &data) { static_assert(sizeof(T) == 0, "can't construct maybe<void> with value"); }
+    maybe(const T &data) { static_assert(sizeof(T) == 0, "can't construct maybe<void> with value"); (void)data; }
 
     void operator*() const { throw std::logic_error("Cannot dereference maybe<void>"); }
 
