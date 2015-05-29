@@ -14,45 +14,48 @@ MALLOC_LDFLAGS = -ldl
 
 all: bench_hash bench_pq
 
+everything: bench_hash bench_pq bench_hash_malloc compare bench_pq_malloc debug_hash debug_pq sanitize_hash sanitize_pq
+
 clean:
-	rm -f *.o bench_hash bench_hash_malloc debug sanitize
+	rm -f *.o bench_hash bench_hash_malloc bench_pq bench_pq_malloc \
+		debug_hash debug_pq sanitize_hash sanitize_pq
 
 malloc_count.o: malloc_count/malloc_count.c  malloc_count/malloc_count.h
 	$(CC) -O2 -Wall -Werror -g -c -o $@ $<
 
-bench_hash: bench_hash.cpp */*.h
+bench_hash: bench_hash.cpp common/*.h hashtable/*.h
 	$(CX) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-bench_hash_malloc: bench_hash.cpp */*.h malloc_count.o
+bench_hash_malloc: bench_hash.cpp malloc_count.o common/*.h hashtable/*.h
 	$(CX) $(CFLAGS) -DMALLOC_INSTR -o $@ $< malloc_count.o $(LDFLAGS) $(MALLOC_LDFLAGS)
 
-bench_pq: bench_pq.cpp */*.h
+bench_pq: bench_pq.cpp common/*.h pq/*.h
 	$(CX) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
-bench_pq_malloc: bench_pq.cpp */*.h malloc_count.o
+bench_pq_malloc: bench_pq.cpp malloc_count.o common/*.h pq/*.h
 	$(CX) $(CFLAGS) -DMALLOC_INSTR -o $@ $< malloc_count.o $(LDFLAGS) $(MALLOC_LDFLAGS)
 
-debug_hash: bench_hash.cpp */*.h
+debug_hash: bench_hash.cpp common/*.h hashtable/*.h
 	$(CX) $(DEBUGFLAGS) -o $@ $< $(LDFLAGS)
 
-debug_hash_malloc: bench_hash.cpp */*.h malloc_count.o
+debug_hash_malloc: bench_hash.cpp malloc_count.o common/*.h hashtable/*.h
 	$(CX) $(DEBUGFLAGS) -DMALLOC_INSTR -o $@ $< malloc_count.o $(LDFLAGS) $(MALLOC_LDFLAGS)
 
-debug_pq: bench_pq.cpp */*.h
+debug_pq: bench_pq.cpp common/*.h pq/*.h
 	$(CX) $(DEBUGFLAGS) -o $@ $< $(LDFLAGS)
 
-debug_pq_malloc: bench_pq.cpp */*.h malloc_count.o
+debug_pq_malloc: bench_pq.cpp malloc_count.o common/*.h pq/*.h
 	$(CX) $(DEBUGFLAGS) -DMALLOC_INSTR -o $@ $< malloc_count.o $(LDFLAGS) $(MALLOC_LDFLAGS)
 
-sanitize_hash: bench_hash.cpp */*.h
+sanitize_hash: bench_hash.cpp common/*.h hashtable/*.h
 	$(CX) $(CFLAGS) -fsanitize=${SANITIZER} -o $@ $< $(LDFLAGS)
 	./$@
 
-sanitize_pq: bench_pq.cpp */*.h
+sanitize_pq: bench_pq.cpp common/*.h pq/*.h
 	$(CX) $(CFLAGS) -fsanitize=${SANITIZER} -o $@ $< $(LDFLAGS)
 	./$@
 
-compare: compare.cpp */*.h
+compare: compare.cpp common/*.h
 	$(CX) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 run_hash: bench_hash

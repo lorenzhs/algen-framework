@@ -8,6 +8,6 @@ massif.out.*
 *.sublime-*
 *.o
 debug*
-sanitize
+sanitize_*
 compare
 compare_*
