@@ -39,26 +39,44 @@ public:
 
     static void* fill_heap_random(PQ& queue, Configuration config, void*) {
         std::mt19937 random{config.second};
-        for (size_t i = 0; i < config.first; ++i) {
+        for (size_t i = 0; i < config.first; ++i)
             queue.push(random());
-        }
         return nullptr;
+    }
+
+    static void* fill_both_random(PQ &queue, Configuration config, void* data) {
+        fill_heap_random(queue, config, data);
+        config.second++; // "new" seed
+        return fill_data_random(queue, config, data);
     }
 
     static void register_benchmarks(common::contender_list<Benchmark> &benchmarks) {
         const std::vector<Configuration> configs{
-            std::make_pair(1<<16, 1234567),
+            std::make_pair(1<<16, 0xDECAF),
             std::make_pair(1<<18, 0xBEEF),
             std::make_pair(1<<20, 0xC0FFEE),
-            /*1<<22, 1<<24, 1<<26*/};
+            //std::make_pair(1<<22, 0xF005BA11),
+            //std::make_pair(1<<24, 0xBA5EBA11),
+            //std::make_pair(1<<26, 0xCA55E77E)
+        };
 
-        common::register_benchmark("insert", "insert",  microbenchmark::fill_heap_random, configs, benchmarks);
+        common::register_benchmark("push", "push",  microbenchmark::fill_heap_random, configs, benchmarks);
 
-        common::register_benchmark("pop", "pop", microbenchmark::fill_heap_random, [](PQ &queue, Configuration, void*) {
-            while (queue.size() > 0) {
-                queue.pop();
-            }
-        }, configs, benchmarks);
+        common::register_benchmark("pop", "pop", microbenchmark::fill_heap_random,
+            [](PQ &queue, Configuration, void*) {
+                while (queue.size() > 0)
+                    queue.pop();
+            }, configs, benchmarks);
+
+        common::register_benchmark("push-pop-mix on full heap", "insert-pop-mix",
+            microbenchmark::fill_both_random,
+            [](PQ &queue, Configuration config, void* ptr) {
+                auto data = static_cast<typename PQ::value_type*>(ptr);
+                for (size_t i = 0; i < config.first; ++i) {
+                    queue.push(data[i]);
+                    queue.pop();
+                }
+            }, configs, benchmarks);
     }
 };
 }
