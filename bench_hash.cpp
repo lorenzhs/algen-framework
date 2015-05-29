@@ -26,6 +26,7 @@ void usage(char* name) {
 		 << "-n <int>      number of repetitions for each benchmark (default: 1)" << endl
 		 << "-c <double>   cutoff, at which difference ratio to stop printing (deafult: 1.01)" << endl
 		 << "-m <int>      maximum number of differences to print (default: 25)" << endl
+		 << "-b <int>      which contender to compare to the others (default: 0)" << endl
 		 << endl
 		 << "Instrumentation options:" << endl
 		 << "-nt           disable timer instrumentation" << endl
@@ -40,8 +41,9 @@ int main(int argc, char** argv) {
 	if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
 	const std::string resultfn_prefix = args.get<std::string>("p", "results_hash_"),
 		serializationfn = args.get<std::string>("o", "data_hash.txt");
-	const size_t repetitions = args.get<size_t>("n", 1),
-		         max_results = args.get<size_t>("m", 25);
+	const int repetitions = args.get<int>("n", 1),
+		      max_results = args.get<int>("m", 25),
+		      base_contender = args.get<int>("b", 0);
 	const double cutoff = args.get<double>("c", 1.01);
 	__attribute__((unused))
 	const bool disable_timer      = args.is_set("nt"),
@@ -86,7 +88,7 @@ int main(int argc, char** argv) {
 	runner.run(repetitions, resultfn_prefix);
 
 	if (contenders.size() > 1) {
-		common::comparison comparison(results, 0);
+		common::comparison comparison(results, base_contender);
 		comparison.compare();
 		comparison.print(std::cout, cutoff, max_results);
 	}

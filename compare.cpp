@@ -14,7 +14,8 @@
 
 int main(int argc, char** argv) {
 	common::arg_parser args(argc, argv);
-	const size_t max_results = args.get<size_t>("m", 25);
+	const int max_results = args.get<int>("m", 25),
+			  base_contender = args.get<int>("b", 0);
 	const double cutoff = args.get<double>("c", 1.01);
 	const std::string &filename = args.get<std::string>("i", "data.txt");
 
@@ -26,7 +27,7 @@ int main(int argc, char** argv) {
 	boost::archive::text_iarchive ia(ifs);
 	ia >> results;
 
-	common::comparison comparison(results, 0);
+	common::comparison comparison(results, base_contender);
 	comparison.compare();
 	comparison.print(std::cout, cutoff, max_results);
 }
