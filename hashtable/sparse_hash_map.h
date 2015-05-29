@@ -62,4 +62,4 @@ protected:
     google::sparse_hash_map<Key, T, HashFcn, EqualKey, Alloc> map;
 };
 
-};
+}

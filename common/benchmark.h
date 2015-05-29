@@ -29,7 +29,7 @@ public:
 	virtual std::ostream& result(std::ostream &os) const = 0;
 
 	template <typename Archive>
-	void serialize(Archive & ar, const unsigned int file_version) {};
+	void serialize(Archive & ar, const unsigned int file_version) { (void) ar; (void) file_version; }
 protected:
 	// remove spaces for sqlplottools
 	template <typename String> // URef
@@ -68,9 +68,9 @@ public:
 		avg->div(num_results);
 	}
 
-	const benchmark_result *const minimum() const { return min; }
-	const benchmark_result *const maximum() const { return max; }
-	const benchmark_result *const average() const { return avg; }
+	const benchmark_result * minimum() const { return min; }
+	const benchmark_result * maximum() const { return max; }
+	const benchmark_result * average() const { return avg; }
 
 	std::vector<double> compare_to(const benchmark_result_aggregate &other) {
 		return avg->compare_to(other.avg);
@@ -131,9 +131,10 @@ public:
 
 	template <typename Archive>
 	void serialize(Archive & ar, const unsigned int file_version) {
+		(void) file_version; // unused
 		ar & benchmark & instance & configuration;
 		ar & min & max & avg & num_results;
-	};
+	}
 protected:
 	std::string benchmark, instance, configuration;
 	benchmark_result *min, *max, *avg;

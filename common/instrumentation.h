@@ -54,12 +54,13 @@ public:
 	}
 
 	virtual std::ostream& print_component(int component, std::ostream &os) {
-		assert(component == 0);
+		assert(component == 0); (void)component;
 		return os << duration << "ms";
 	}
 
 	template <typename Archive>
 	void serialize(Archive & ar, const unsigned int file_version) {
+		(void)file_version;
 		ar & boost::serialization::base_object<benchmark_result>(*this);
 		ar & duration;
 	}
@@ -158,6 +159,7 @@ public:
 
 	template <typename Archive>
 	void serialize(Archive & ar, const unsigned int file_version) {
+		(void)file_version;
 		ar & boost::serialization::base_object<benchmark_result>(*this);
 		ar & events & counters;
 	}
@@ -270,6 +272,7 @@ public:
 
 	template <typename Archive>
 	void serialize(Archive & ar, const unsigned int file_version) {
+		(void)file_version;
 		ar & boost::serialization::base_object<benchmark_result>(*this);
 		ar & total & peak & count;
 	}
@@ -314,13 +317,13 @@ private:
 }
 
 
-BOOST_CLASS_EXPORT_KEY(common::benchmark_result);
+BOOST_CLASS_EXPORT_KEY(common::benchmark_result)
 
-BOOST_CLASS_EXPORT_KEY(common::timer_result);
-BOOST_CLASS_EXPORT_IMPLEMENT(common::timer_result);
+BOOST_CLASS_EXPORT_KEY(common::timer_result)
+BOOST_CLASS_EXPORT_IMPLEMENT(common::timer_result)
 
-BOOST_CLASS_EXPORT_KEY(common::papi_result);
-BOOST_CLASS_EXPORT_IMPLEMENT(common::papi_result);
+BOOST_CLASS_EXPORT_KEY(common::papi_result)
+BOOST_CLASS_EXPORT_IMPLEMENT(common::papi_result)
 
-BOOST_CLASS_EXPORT_KEY(common::memory_result);
-BOOST_CLASS_EXPORT_IMPLEMENT(common::memory_result);
+BOOST_CLASS_EXPORT_KEY(common::memory_result)
+BOOST_CLASS_EXPORT_IMPLEMENT(common::memory_result)

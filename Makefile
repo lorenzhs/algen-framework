@@ -6,7 +6,7 @@ CC ?= gcc
 
 SANITIZER ?= address
 
-COMMONFLAGS = -std=c++1y -Wall -Werror
+COMMONFLAGS = -std=c++1y -Wall -Wextra -Werror
 CFLAGS = ${COMMONFLAGS} -Ofast -g -DNDEBUG
 DEBUGFLAGS = ${COMMONFLAGS} -O0 -ggdb3
 LDFLAGS = -lpapi -lboost_serialization

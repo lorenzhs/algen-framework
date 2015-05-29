@@ -56,4 +56,4 @@ protected:
     std::unordered_map<Key, T, Hash, KeyEqual, Allocator> map;
 };
 
-};
+}
