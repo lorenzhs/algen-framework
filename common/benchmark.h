@@ -144,30 +144,34 @@ protected:
 template <typename DataStructure, typename Configuration>
 class benchmark {
 public:
-    using F = std::function<void(DataStructure&, Configuration&)>;
-    F function, setup, teardown;
+    using F = std::function<void(DataStructure&, Configuration&, void*)>;
+    using S = std::function<void*(DataStructure&, Configuration&, void*)>;
+    S setup;
+    F function, teardown;
     const std::vector<Configuration> &configurations;
+    void* data;
 
     // Constructor from benchmark function and configuration vector
     benchmark(F &&function, const std::vector<Configuration> &configurations)
-        : function(std::forward<F>(function))
+        : function(std::move(function))
         , configurations(configurations) {}
 
     // Constructor from setup, benchmark, and configurations
-    benchmark(F &&setup, F &&function, const std::vector<Configuration> &configurations)
-        : function(std::forward<F>(function))
-        , setup(std::forward<F>(setup))
+    benchmark(S &&setup, F &&function, const std::vector<Configuration> &configurations)
+        : setup(std::move(setup))
+        , function(std::move(function))
         , configurations(configurations) {}
 
     // Constructor from setup, benchmark, teardown + configurations
-    benchmark(F &&setup, F &&function, F &&teardown, const std::vector<Configuration> &configurations)
-        : function(std::forward<F>(function))
-        , setup(std::forward<F>(setup))
-        , teardown(std::forward<F>(teardown))
+    
+    benchmark(S &&setup, F &&function, F &&teardown, const std::vector<Configuration> &configurations)
+        : setup(std::move(setup))
+        , function(std::move(function))
+        , teardown(std::move(teardown))
         , configurations(configurations) {}
 
-    benchmark(const F &other) = delete;
-    benchmark(F &&other) = delete;
+    benchmark(const benchmark &other) = delete;
+    benchmark(benchmark &&other) = delete;
     benchmark() = delete;
 
     template <typename Instrumentation>
@@ -178,20 +182,20 @@ public:
     {
         // Create data structure and set up benchmark
         DataStructure *instance = factory();
-        if (setup) setup(*instance, configuration);
+        if (setup) data = setup(*instance, configuration, data);
 
         // Set up instrumentation
         instrumentation->setup();
 
         // Run benchmark
-        function(*instance, configuration);
+        function(*instance, configuration, data);
 
         // stop and destroy instrumentation
         instrumentation->finish();
         auto result = instrumentation->result();
 
         // Tear down benchmark and destroy data structure
-        if (teardown) teardown(*instance, configuration);
+        if (teardown) teardown(*instance, configuration, data);
         delete instance;
 
         return result;
