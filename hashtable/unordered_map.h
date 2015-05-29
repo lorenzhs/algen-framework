@@ -31,7 +31,7 @@ public:
     }
 
     T& operator[](Key&& key) {
-        return map[std::forward<Key>(key)];
+        return map[std::move(key)];
     }
 
     maybe<T> find(const Key &key) {
