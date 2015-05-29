@@ -59,8 +59,7 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive & ar, const unsigned int file_version) {
-        (void)file_version;
+    void serialize(Archive & ar, const unsigned int) {
         ar & boost::serialization::base_object<benchmark_result>(*this);
         ar & duration;
     }
@@ -158,8 +157,7 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive & ar, const unsigned int file_version) {
-        (void)file_version;
+    void serialize(Archive & ar, const unsigned int) {
         ar & boost::serialization::base_object<benchmark_result>(*this);
         ar & events & counters;
     }
@@ -271,8 +269,7 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive & ar, const unsigned int file_version) {
-        (void)file_version;
+    void serialize(Archive & ar, const unsigned int) {
         ar & boost::serialization::base_object<benchmark_result>(*this);
         ar & total & peak & count;
     }

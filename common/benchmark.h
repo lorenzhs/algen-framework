@@ -29,7 +29,7 @@ public:
     virtual std::ostream& result(std::ostream &os) const = 0;
 
     template <typename Archive>
-    void serialize(Archive & ar, const unsigned int file_version) { (void) ar; (void) file_version; }
+    void serialize(Archive &, const unsigned int) {}
 protected:
     // remove spaces for sqlplottools
     template <typename String> // URef
@@ -130,8 +130,7 @@ public:
     }
 
     template <typename Archive>
-    void serialize(Archive & ar, const unsigned int file_version) {
-        (void) file_version; // unused
+    void serialize(Archive & ar, const unsigned int) {
         ar & benchmark & instance & configuration;
         ar & min & max & avg & num_results;
     }
