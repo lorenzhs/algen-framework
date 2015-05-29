@@ -59,31 +59,52 @@ public:
             std::cout << term::bold << results[i][0].instance_desc() << term::reset << "; ";
         }
         std::cout << "largest differences:" << std::endl;
-        size_t num_results(0);
-        for (auto res : similarity) {
+
+        std::unordered_map<std::string, std::vector<size_t>> instr2result;
+
+        for (size_t i = 0; i < similarity.size(); ++i) {
+            auto &res = similarity[i];
             size_t index = std::get<0>(res);
             size_t elem = std::get<1>(res);
             double sim = std::get<2>(res);
-            int subindex = std::get<3>(res);
 
-            if (sim < cutoff || ++num_results > max_results) break;
+            const std::string &instr = results[index][elem].instrumentation_desc();
+            if (sim < cutoff || instr2result[instr].size() > max_results) continue;
 
-            os << "Similarity ratio " << term::bold;
-            // set appropriate colour
-            if (sim > 2)         os << term::set_colour(term::colour::fg_red);
-            else if (sim > 1.3)  os << term::set_colour(term::colour::fg_yellow);
-            else if (sim > 1.1)  os << term::set_colour(term::colour::fg_green);
-            else if (sim > 1.02) os << term::set_colour(term::colour::fg_cyan);
-            // re-compare to get the exact ratio, not the one used for sorting
-            os << results[base_index][elem].compare_to(results[index][elem])[subindex]
-               << term::reset << " (factor " << sim << ") for ";
-            results[index][elem].describe(os);
-            results[index][elem].print_component(subindex, os) << "; " << term::bold
-                << results[base_index][elem].instance_desc() << term::reset << ": ";
-            results[base_index][elem].print_component(subindex, os) << std::endl;
+            instr2result[instr].push_back(i);
         }
-        if (num_results == 0) {
-            std::cout << "No differences worth mentioning (cutoff = " << cutoff << ")" << std::endl;
+
+        for (auto resultlist : instr2result) {
+            std::cout << std::endl << term::underline << term::bold << common::term::set_colour(common::term::colour::fg_green)
+                << "Comparison with respect to "<< resultlist.first << " instrumentation:"
+                << term::reset << std::endl;
+
+            auto &instr_results = resultlist.second;
+            for (auto result_index : instr_results) {
+                auto res = similarity[result_index];
+                size_t index = std::get<0>(res);
+                size_t elem = std::get<1>(res);
+                double sim = std::get<2>(res);
+                int subindex = std::get<3>(res);
+
+                os << "Similarity ratio " << term::bold;
+                // set appropriate colour
+                if (sim > 2)         os << term::set_colour(term::colour::fg_red);
+                else if (sim > 1.3)  os << term::set_colour(term::colour::fg_yellow);
+                else if (sim > 1.1)  os << term::set_colour(term::colour::fg_green);
+                else if (sim > 1.02) os << term::set_colour(term::colour::fg_cyan);
+                // re-compare to get the exact ratio, not the one used for sorting
+                os << results[base_index][elem].compare_to(results[index][elem])[subindex]
+                   << term::reset << " (factor " << sim << ") for ";
+                results[index][elem].describe(os);
+                results[index][elem].print_component(subindex, os) << "; " << term::bold
+                    << results[base_index][elem].instance_desc() << term::reset << ": ";
+                results[base_index][elem].print_component(subindex, os) << std::endl;
+            }
+
+            if (instr_results.empty()) {
+                std::cout << "No differences worth mentioning (cutoff = " << cutoff << ")" << std::endl;
+            }
         }
         return os;
     }
