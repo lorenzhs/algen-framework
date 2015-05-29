@@ -16,6 +16,7 @@
 #include "pq/std_pq.h"
 #include "pq/gnu_pq.h"
 #include "pq/microbenchmark.h"
+#include "pq/heapsort.h"
 
 void usage(char* name) {
     using std::cout;
@@ -65,6 +66,7 @@ int main(int argc, char** argv) {
     // Register Benchmarks
     common::contender_list<Benchmark> benchmarks;
     pq::microbenchmark<PQ>::register_benchmarks(benchmarks);
+    pq::heapsort<PQ>::register_benchmarks(benchmarks);
 
     // Register instrumentations
     common::contender_list<common::instrumentation> instrumentations;
