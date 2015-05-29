@@ -85,9 +85,11 @@ int main(int argc, char** argv) {
 	common::experiment_runner<HashTable, size_t> runner(contenders, instrumentations, benchmarks, results);
 	runner.run(repetitions, resultfn_prefix);
 
-	common::comparison comparison(results, 0);
-	comparison.compare();
-	comparison.print(std::cout, cutoff, max_results);
+	if (contenders.size() > 1) {
+		common::comparison comparison(results, 0);
+		comparison.compare();
+		comparison.print(std::cout, cutoff, max_results);
+	}
 
 	// Serialize results
 	runner.serialize(serializationfn);
