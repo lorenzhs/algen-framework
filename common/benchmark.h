@@ -93,13 +93,9 @@ public:
         // convert configuration object into a string
         // this might be a trivial type (e.g. size_t)
         // so we can't just call a description member
-        if (std::is_arithmetic<Configuration>::value) {
-            configuration = std::to_string(configuration_obj);
-        } else {
-            std::ostringstream s;
-            s << configuration_obj;
-            configuration = s.str();
-        }
+        std::ostringstream s;
+        s << configuration_obj;
+        configuration = s.str();
     }
 
     const std::string& benchmark_name() const {
@@ -118,9 +114,7 @@ public:
     std::ostream& describe(std::ostream &os) const {
         return os << "Benchmark '" << term::bold << benchmark << term::reset
                   << "' on instance '" << term::bold << instance << term::reset
-                  << "' with configuration '" << term::bold << configuration << term::reset
-                  << "' using '" << term::bold << instrumentation << term::reset
-                  << "' instrumentation: ";
+                  << "' with config '" << term::bold << configuration << term::reset << "': ";
     }
 
     friend std::ostream& operator<<(std::ostream &os, const benchmark_result_aggregate &res) {

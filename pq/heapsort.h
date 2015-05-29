@@ -27,6 +27,7 @@ public:
         
         common::register_benchmark("heapsort", "heapsort", [](PQ&, size_t size, void*) {
             return new typename PQ::value_type[size];
+            // TODO: add predictable pseudorandom data
         }, [](PQ &queue, size_t size, void* data) {
             assert(data != nullptr);
             auto ptr = static_cast<typename PQ::value_type*>(data);

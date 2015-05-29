@@ -19,7 +19,7 @@ void usage(char* name) {
          << "Options:" << endl
          << "-i <filename> input serialization filename (default: data.txt)" << endl
          << "-c <double>   cutoff, at which difference ratio to stop printing (deafult: 1.01)" << endl
-         << "-m <int>      maximum number of differences to print (default: 25)" << endl
+         << "-m <int>      maximum number of differences to print (default: 10)" << endl
          << "-b <int>      which contender to compare to the others (default: 0)" << endl;
     exit(0);
 }
@@ -27,7 +27,7 @@ void usage(char* name) {
 int main(int argc, char** argv) {
     common::arg_parser args(argc, argv);
     if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
-    const int max_results = args.get<int>("m", 25),
+    const int max_results = args.get<int>("m", 10),
               base_contender = args.get<int>("b", 0);
     const double cutoff = args.get<double>("c", 1.01);
     const std::string &filename = args.get<std::string>("i", "data.txt");
@@ -36,7 +36,10 @@ int main(int argc, char** argv) {
 
     // Serialize results
     std::ifstream ifs(filename);
-    assert(ifs.good());
+    if (!ifs.good() || !ifs.is_open()) {
+        std::cerr << "Can't open file: " << filename << std::endl;
+        exit(1);
+    }
     boost::archive::text_iarchive ia(ifs);
     ia >> results;
 

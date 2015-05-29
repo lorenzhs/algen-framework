@@ -87,7 +87,7 @@ public:
                 double sim = std::get<2>(res);
                 int subindex = std::get<3>(res);
 
-                os << "Similarity ratio " << term::bold;
+                os << "Similarity " << term::bold;
                 // set appropriate colour
                 if (sim > 2)         os << term::set_colour(term::colour::fg_red);
                 else if (sim > 1.3)  os << term::set_colour(term::colour::fg_yellow);
@@ -95,7 +95,7 @@ public:
                 else if (sim > 1.02) os << term::set_colour(term::colour::fg_cyan);
                 // re-compare to get the exact ratio, not the one used for sorting
                 os << results[base_index][elem].compare_to(results[index][elem])[subindex]
-                   << term::reset << " (factor " << sim << ") for ";
+                   << term::reset << " (" << sim << "x) in ";
                 results[index][elem].describe(os);
                 results[index][elem].print_component(subindex, os) << "; " << term::bold
                     << results[base_index][elem].instance_desc() << term::reset << ": ";
