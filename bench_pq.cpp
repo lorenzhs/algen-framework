@@ -14,6 +14,7 @@
 
 #include "pq/priority_queue.h"
 #include "pq/std_pq.h"
+#include "pq/gnu_pq.h"
 #include "pq/microbenchmark.h"
 
 void usage(char* name) {
@@ -54,6 +55,10 @@ int main(int argc, char** argv) {
 	// Set up data structure contenders
 	common::contender_list<PQ> contenders;
 	pq::std_pq<int>::register_contenders(contenders);
+#if defined(__GNUG__) && !(defined(__APPLE_CC__))
+	// These are from GNU libstdc++ policy-based datastructures library
+	pq::gnu_pq<int>::register_contenders(contenders);
+#endif
 
 	// Register Benchmarks
 	common::contender_list<Benchmark> benchmarks;
