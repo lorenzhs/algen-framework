@@ -4,22 +4,17 @@
 
 #include <papi.h>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
 
 #include "common/arg_parser.h"
 #include "common/benchmark.h"
 #include "common/comparison.h"
 #include "common/contenders.h"
+#include "common/experiments.h"
 #include "common/instrumentation.h"
-#include "common/terminal.h"
 #include "hashtable/dense_hash_map.h"
 #include "hashtable/sparse_hash_map.h"
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
-
-namespace term = common::term;
 
 void usage(char* name) {
 	using std::cout;
@@ -86,94 +81,16 @@ int main(int argc, char** argv) {
 #endif
 
 	std::vector<std::vector<common::benchmark_result_aggregate>> results;
-	results.reserve(contenders.end() - contenders.begin());
 
-	// Run all combinations!
-	bool first_iteration = true;
-	for (auto datastructure_factory : contenders) {
-		std::cout << term::bold << term::underline << common::term::set_colour(common::term::colour::fg_green)
-				  << "Benchmarking " << datastructure_factory.description()
-				  << term::reset << std::endl;
-
-		std::fstream::openmode res_flags = std::fstream::out;
-		// overwrite on first iteration, append afterwards
-		if (!first_iteration) res_flags |= std::fstream::app;
-		else first_iteration = false;
-
-		std::vector<common::benchmark_result_aggregate> ds_results;
-
-		for (auto instrumentation_factory : instrumentations) {
-			std::cout << term::bold << common::term::set_colour(common::term::colour::fg_yellow)
-					  << "Benchmarking " << datastructure_factory.description()
-					  << " with " << instrumentation_factory.description() << " instrumentation"
-					  << term::reset << std::endl;
-
-			std::fstream res(resultfn_prefix + instrumentation_factory.key() + ".txt", res_flags);
-
-			auto instrumentation = instrumentation_factory();
-
-			for (auto benchmark_factory : benchmarks) {
-				auto benchmark = benchmark_factory();
-				// dry run with first configuration to prevent skews
-				auto initial_configuration = *(benchmark->begin());
-				delete benchmark->run(datastructure_factory, instrumentation,
-					initial_configuration);
-
-				// Run benchmark on all configurations
-				for (auto configuration : *benchmark) {
-					common::benchmark_result_aggregate aggregate(instrumentation->new_result(true),
-						instrumentation->new_result(), instrumentation->new_result());
-
-					for (size_t rep = 0; rep < repetitions; ++rep) {
-						// We need to pass in the benchmark factory here so that the
-						// result object can know its name...
-						auto t = benchmark->run(datastructure_factory, instrumentation, configuration);
-						aggregate.add_result(t);
-
-						// Print RESULT lines for sqlplot-tools
-						res << "RESULT"
-							<< " config=" << configuration
-							<< " ds=" << datastructure_factory.key()
-							<< " bench=" << benchmark_factory.key();
-						t->result(res);
-						res << std::endl;
-						delete t;
-					}
-
-					aggregate.finish();
-					aggregate.set_properties(benchmark_factory.description(),
-						datastructure_factory.description(), configuration);
-
-					// Aggregate results of multiple runs
-					std::cout << aggregate << std::endl;
-					ds_results.emplace_back(std::move(aggregate));
-				}
-				delete benchmark;
-				std::cout << std::endl;
-			}
-			res.close();
-			delete instrumentation;
-			std::cout << std::endl;
-		}
-
-		results.emplace_back(std::move(ds_results));
-	}
+	common::experiment_runner<HashTable, size_t> runner(contenders, instrumentations, benchmarks, results);
+	runner.run(repetitions, resultfn_prefix);
 
 	common::comparison comparison(results, 0);
 	comparison.compare();
 	comparison.print(std::cout, cutoff, max_results);
 
 	// Serialize results
-	std::ofstream ofs(serializationfn);
-	boost::archive::text_oarchive oa(ofs);
-	oa << results;
+	runner.serialize(serializationfn);
 
-	for (auto &ds_results : results)
-		for (auto &result : ds_results)
-			result.destroy();
-
-
-	// Shut down PAPI if it was used
-	if (PAPI_is_initialized() != PAPI_NOT_INITED)
-		PAPI_shutdown();
+	runner.shutdown();
 }

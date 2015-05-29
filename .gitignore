@@ -1,5 +1,7 @@
-bench_tmp
-bench_tmp_malloc
+bench_hash
+bench_hash_malloc
+bench_pq
+bench_pq_malloc
 *.txt
 *.pdf
 massif.out.*
