@@ -5,6 +5,8 @@ namespace pq {
 template <typename T>
 class priority_queue {
 public:
+    using value_type = T;
+
     // You also need to provide the following:
     // static void register_contenders(common::contender_list<priority_queue<T>> &list)
 
