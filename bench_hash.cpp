@@ -10,6 +10,7 @@
 #include "common/comparison.h"
 #include "common/contenders.h"
 #include "common/experiments.h"
+#include "common/hack.h"
 #include "common/instrumentation.h"
 #include "hashtable/dense_hash_map.h"
 #include "hashtable/sparse_hash_map.h"
@@ -51,7 +52,8 @@ int main(int argc, char** argv) {
                disable_papi_instr = args.is_set("npi") || args.is_set("np");
 
     using HashTable = hashtable::hashtable<int, int>;
-    using Benchmark = common::benchmark<HashTable, size_t>;
+    using Configuration = std::pair<size_t, size_t>;
+    using Benchmark = common::benchmark<HashTable, Configuration>;
 
     // Set up data structure contenders
     common::contender_list<HashTable> contenders;
@@ -84,7 +86,7 @@ int main(int argc, char** argv) {
 
     std::vector<std::vector<common::benchmark_result_aggregate>> results;
 
-    common::experiment_runner<HashTable, size_t> runner(contenders, instrumentations, benchmarks, results);
+    common::experiment_runner<HashTable, Configuration> runner(contenders, instrumentations, benchmarks, results);
     runner.run(repetitions, resultfn_prefix);
 
     if (contenders.size() > 1) {
