@@ -50,6 +50,11 @@ public:
         return fill_data_random(queue, config, data);
     }
 
+    static void clear_data(PQ&, Configuration, void* ptr) {
+        auto data = static_cast<typename PQ::value_type*>(ptr);
+        delete[] data;
+    }
+
     static void register_benchmarks(common::contender_list<Benchmark> &benchmarks) {
         const std::vector<Configuration> configs{
             std::make_pair(1<<16, 0xDECAF),
@@ -76,7 +81,7 @@ public:
                     queue.push(data[i]);
                     queue.pop();
                 }
-            }, configs, benchmarks);
+            }, microbenchmark::clear_data, configs, benchmarks);
     }
 };
 }
