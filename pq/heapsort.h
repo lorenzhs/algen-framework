@@ -54,15 +54,12 @@ public:
             }, configs, benchmarks);
 
         common::register_benchmark("heapsort random", "heapsort-rand",
-            microbenchmark<PQ>::fill_data_random,
+            microbenchmark<PQ>::template fill_data_random<1>,
             [](PQ &queue, Configuration config, void* data) {
                 assert(data != nullptr);
                 auto ptr = static_cast<typename PQ::value_type*>(data);
                 heapsort::sort(queue, ptr, ptr+config.first);
-            },
-            [](PQ&, Configuration, void* data) {
-                delete[] static_cast<typename PQ::value_type*>(data);
-            }, configs, benchmarks);
+            }, microbenchmark<PQ>::clear_data, configs, benchmarks);
     }
 };
 
