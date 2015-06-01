@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "../common/benchmark.h"
+#include "../common/benchmark_util.h"
 #include "../common/contenders.h"
 
 namespace pq {
@@ -16,25 +17,17 @@ public:
     using Configuration = std::pair<size_t, size_t>;
     using Benchmark = common::benchmark<PQ, Configuration>;
     using BenchmarkFactory = common::contender_factory<Benchmark>;
-
-    template <typename F>
-    static typename PQ::value_type* fill_data(size_t size, F&& cb) {
-        auto data = new typename PQ::value_type[size];
-        for (size_t i = 0; i < size; ++i)
-            data[i] = cb(i);
-        return data;
-    }
+    using T = typename PQ::value_type;
 
     static void* fill_data_permutation(PQ&, Configuration config, void*) {
-        auto data = fill_data(config.first, [](size_t i) {return i;});
-        std::shuffle(data, data + config.first, std::mt19937{config.second});
-        return data;
+        return common::util::fill_data_permutation<T>(
+            config.first, config.second);
     }
 
     template <int factor=1>
     static void* fill_data_random(PQ&, Configuration config, void*) {
-        std::mt19937 gen{config.second};
-        return fill_data(config.first*factor, [&gen](size_t) {return gen();});
+        return common::util::fill_data_random<T>(
+            factor*config.first, config.second);
     }
 
     template <int factor = 1>
@@ -53,9 +46,8 @@ public:
         return fill_data_random<dfactor>(queue, config, data);
     }
 
-    static void clear_data(PQ&, Configuration, void* ptr) {
-        auto data = static_cast<typename PQ::value_type*>(ptr);
-        delete[] data;
+    static void clear_data(PQ&, Configuration, void* data) {
+        common::util::delete_data<T>(data);
     }
 
     static void register_benchmarks(common::contender_list<Benchmark> &benchmarks) {
@@ -79,7 +71,7 @@ public:
         common::register_benchmark("push-pop-mix on full heap", "push-pop-mix",
             microbenchmark::fill_both_random<1>,
             [](PQ &queue, Configuration config, void* ptr) {
-                auto data = static_cast<typename PQ::value_type*>(ptr);
+                T* data = static_cast<T*>(ptr);
                 for (size_t i = 0; i < config.first; ++i) {
                     queue.push(data[i]);
                     queue.pop();
@@ -89,7 +81,7 @@ public:
         common::register_benchmark("(push-pop-push)^n (pop-push-pop)^n", "idi^n-did^n",
             microbenchmark::fill_data_random<3>,
             [](PQ &queue, Configuration config, void* ptr) {
-                auto data = static_cast<typename PQ::value_type*>(ptr);
+                T* data = static_cast<T*>(ptr);
                 size_t size = config.first;
                 for (size_t i = 0; i < size; ++i) {
                     queue.push(data[i]);
