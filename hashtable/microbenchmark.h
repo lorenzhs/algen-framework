@@ -46,8 +46,8 @@ public:
     static void register_benchmarks(common::contender_list<Benchmark> &benchmarks) {
         auto fill = [](HashTable &map, Configuration config, void* ptr) {
             T* data = static_cast<T*>(ptr);
-            for (size_t i = 1; i <= config.first; ++i) {
-                map[i] = data[i];
+            for (size_t i = 0; i < config.first; ++i) {
+                map[i+1] = data[i];
             }
             return nullptr;
         };
@@ -70,8 +70,8 @@ public:
             [](HashTable &map, Configuration config, void* ptr) {
                 T* data = static_cast<T*>(ptr);
                 size_t num = config.first;
-                for (size_t i = 1; i <= num; ++i) {
-                    map[i] = data[i];
+                for (size_t i = 0; i < num; ++i) {
+                    map[i+1] = data[i];
                 }
                 for (size_t i = 1; i <= num; ++i) {
                     map.find(i);
@@ -83,15 +83,15 @@ public:
             [](HashTable &map, Configuration &config, void* ptr) {
                 T* data = static_cast<T*>(ptr);
                 size_t num = config.first;
-                for (size_t i = 1; i <= num; ++i) {
-                    map[i] = data[i];
-                    map.erase(i);
-                    map[i] = data[num + i];
+                for (size_t i = 0; i < num; ++i) {
+                    map[i+1] = data[i];
+                    map.erase(i+1);
+                    map[i+1] = data[num + i];
                 }
-                for (size_t i = 1; i <= num; ++i) {
-                    map.erase(i);
-                    map[i] = data[2*num + i];
-                    map.erase(i);
+                for (size_t i = 0; i < num; ++i) {
+                    map.erase(i+1);
+                    map[i+1] = data[2*num + i];
+                    map.erase(i+1);
                 }
             }, microbenchmark::delete_data, configs, benchmarks);
 
@@ -115,8 +115,8 @@ public:
         common::register_benchmark("find random", "find-random", microbenchmark::fill_both_random<1>,
             [](HashTable &map, Configuration config, void* ptr) {
                 T* data = static_cast<T*>(ptr);
-                for (size_t i = 1; i <= config.first; ++i) {
-                    (void)map.find(data[i]);
+                for (size_t i = 0; i < config.first; ++i) {
+                    (void)map.find(data[i]+1);
                 }
             }, microbenchmark::delete_data, configs, benchmarks);
     }
