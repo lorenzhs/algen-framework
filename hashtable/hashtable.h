@@ -10,6 +10,8 @@ template <typename Key, typename T>
 class hashtable {
 public:
     using value_type = std::pair<Key, T>;
+    using key_type = Key;
+    using mapped_type = T;
 
     // You also need to provide the following:
     // static void register_contenders(common::contender_list<hashtable<Key, T>> &list)
