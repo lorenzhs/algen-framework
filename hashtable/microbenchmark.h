@@ -4,7 +4,6 @@
 
 #include "../common/benchmark.h"
 #include "../common/contenders.h"
-#include "../common/timer.h"
 
 namespace hashtable {
 
