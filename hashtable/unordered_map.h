@@ -15,7 +15,7 @@ template <typename Key,
           typename Allocator = std::allocator<std::pair<const Key, T>>>
 class unordered_map : public hashtable<Key, T> {
 public:
-    unordered_map(const size_t bucket_count = 0) : hashtable<Key, T>(), map(bucket_count) {}
+    unordered_map(const size_t bucket_count = 0) : map(bucket_count) {}
     virtual ~unordered_map() = default;
 
     // Register all contenders in the list
