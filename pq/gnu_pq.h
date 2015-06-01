@@ -19,12 +19,20 @@ class gnu_pq : public priority_queue<T> {
 public:
     gnu_pq() : queue() {}
 
+    virtual ~gnu_pq() {
+        bool is_pairing_heap = std::is_same<Tag,  __gnu_pbds::pairing_heap_tag>::value;
+        if (is_pairing_heap) {
+            // Pairing heap has a recursive destructor
+            queue.clear();
+        }
+    };
+
     static void register_contenders(common::contender_list<priority_queue<T>> &list) {
         using Factory = common::contender_factory<priority_queue<T>>;
-        // The pairing heap seems broken, destructor segfaults for n >= 1<<17 or so
-        //list.register_contender(Factory("GNU Pairing Heap", "GNU-pairing-heap",
-        //    [](){ return new gnu_pq<T, std::less<T>, __gnu_pbds::pairing_heap_tag>();}
-        //));
+        // The pairing heap has a recursive destructor, be careful
+        list.register_contender(Factory("GNU Pairing Heap", "GNU-pairing-heap",
+            [](){ return new gnu_pq<T, std::less<T>, __gnu_pbds::pairing_heap_tag>();}
+        ));
         // This one is mind-bogglingly slow, no idea what they did there
         //list.register_contender(Factory("GNU Binary Heap", "GNU-binary-heap",
         //    [](){ return new gnu_pq<T, std::less<T>, __gnu_pbds::binary_heap_tag>();}
@@ -69,8 +77,6 @@ public:
     size_t size() override {
         return queue.size();
     }
-
-    virtual ~gnu_pq() {}
 
 protected:
     __gnu_pbds::priority_queue<T, Cmp_Fn, Tag, Allocator> queue;
