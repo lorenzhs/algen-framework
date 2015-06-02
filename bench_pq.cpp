@@ -4,7 +4,6 @@
 
 #include <papi.h>
 
-
 #include "common/arg_parser.h"
 #include "common/benchmark.h"
 #include "common/comparison.h"
@@ -40,15 +39,18 @@ void usage(char* name) {
 }
 
 int main(int argc, char** argv) {
+    // Parse command-line arguments
     common::arg_parser args(argc, argv);
-    if (args.is_set("h") || args.is_set("-help")) usage(argv[0]);
+    if (args.is_set("h") || args.is_set("-help")) {
+        usage(argv[0]);
+    }
     const std::string resultfn_prefix = args.get<std::string>("p", "results_pq_"),
-        serializationfn = args.get<std::string>("o", "data_pq.txt");
-    const int repetitions = args.get<int>("n", 1),
-              max_results = args.get<int>("m", 25),
+                      serializationfn = args.get<std::string>("o", "data_pq.txt");
+    const int repetitions    = args.get<int>("n", 1),
+              max_results    = args.get<int>("m", 25),
               base_contender = args.get<int>("b", 0);
     const double cutoff = args.get<double>("c", 1.01);
-    __attribute__((unused))
+    __attribute__((unused)) // don't warn when compiling malloc target
     const bool disable_timer      = args.is_set("nt"),
                disable_papi_cache = args.is_set("npc") || args.is_set("np"),
                disable_papi_instr = args.is_set("npi") || args.is_set("np");
@@ -59,9 +61,14 @@ int main(int argc, char** argv) {
 
     // Set up data structure contenders
     common::contender_list<PQ> contenders;
+    // TODO: add your own implementation here!
+
+    // Add std::priority_queue
     pq::std_pq<int>::register_contenders(contenders);
+
 #if defined(__GNUG__) && !(defined(__APPLE_CC__))
     // These are from GNU libstdc++ policy-based datastructures library
+    // Only use if available
     pq::gnu_pq<int>::register_contenders(contenders);
 #endif
 
@@ -91,16 +98,18 @@ int main(int argc, char** argv) {
 
     std::vector<std::vector<common::benchmark_result_aggregate>> results;
 
+    // Run the benchmarks
     common::experiment_runner<PQ, Configuration> runner(contenders, instrumentations, benchmarks, results);
     runner.run(repetitions, resultfn_prefix);
 
+    // Evaluate the result
     if (contenders.size() > 1) {
         common::comparison comparison(results, base_contender);
         comparison.compare();
         comparison.print(std::cout, cutoff, max_results);
     }
 
-    // Serialize results
+    // Serialize results to disk for further evaluation
     runner.serialize(serializationfn);
 
     runner.shutdown();
