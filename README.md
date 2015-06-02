@@ -39,7 +39,11 @@ Sie sollten alle möglichen Kombinationen von Strategien in einer Funktion
 static void register_contenders(common::contender_list<BASISKLASSE> &list)
 ```
 
-in der Kandidatenliste `list` mit Factories registrieren. Beispiele dafür finden Sie in den implementierten Wrapperklassen.
+in der Kandidatenliste `list` mit Factories registrieren. Beispiele dafür finden Sie in den implementierten Wrapperklassen. Diese müssen Sie dann in der Haupt-Datei (`bench_pq.cpp` oder `bench_hash.cpp`) an der mit "// TODO: add your own implementation here!" markierten Stelle registrieren.
+
+Bitte beachten Sie, dass Sie *alle* Funktionen des Interfaces implementieren müssen, da es sich bei den Interfaces um abstrakte Klassen handelt und der Compiler sich sonst beschwert. Die Verwendung des `override`-Keywords wird empfohlen.
+
+Performance-Hinweis: Ja, die Vererbung hat Performance-Overhead. Dieser ist für das Benchmarking leider unvermeidbar. Für einen Produktiveinsatz der Datenstrukturen reicht es aber, die Vererbung (und `register_contenders`) zu entfernen, da nur die Signaturen vererbt werden. Zudem betrifft dieser Overhead alle Implementierungen in gleichem Maße, ist also auf keine Weise "unfair".
 
 ## Installation
 
