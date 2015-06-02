@@ -26,15 +26,15 @@ public:
         ));
     }
 
-    T& operator[](const Key &key) {
+    T& operator[](const Key &key) override {
         return map[key];
     }
 
-    T& operator[](Key&& key) {
+    T& operator[](Key&& key) override {
         return map[std::move(key)];
     }
 
-    maybe<T> find(const Key &key) {
+    maybe<T> find(const Key &key) const override {
         auto it = map.find(key);
         if (it == map.end()) {
             return nothing<T>();
@@ -44,13 +44,13 @@ public:
         }
     }
 
-    size_t erase(const Key &key) {
+    size_t erase(const Key &key) override {
         return map.erase(key);
     }
 
-    size_t size() const { return map.size(); }
+    size_t size() const override { return map.size(); }
 
-    void clear() { map.clear(); }
+    void clear() override { map.clear(); }
 
 protected:
     std::unordered_map<Key, T, Hash, KeyEqual, Allocator> map;

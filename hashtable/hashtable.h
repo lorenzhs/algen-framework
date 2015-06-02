@@ -23,7 +23,7 @@ public:
     virtual T& operator[](Key &&key) = 0;
 
     /// Find a key in the hash table
-    virtual maybe<T> find(const Key &key) = 0;
+    virtual maybe<T> find(const Key &key) const = 0;
 
     /// Erases all elements with the given key
     /// Returns the number of elements removed
