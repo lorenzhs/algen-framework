@@ -31,6 +31,7 @@ namespace util {
     }
 
     // awful hack!
+    __attribute__((unused))
     static std::string hex_to_ascii(size_t hex) {
         union {
             size_t hex;
