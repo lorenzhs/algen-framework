@@ -16,6 +16,7 @@
 #include "hashtable/sparse_hash_map.h"
 #include "hashtable/unordered_map.h"
 #include "hashtable/microbenchmark.h"
+#include "hashtable/wordcount.h"
 
 void usage(char* name) {
     using std::cout;
@@ -68,6 +69,7 @@ int main(int argc, char** argv) {
     // Register Benchmarks
     common::contender_list<Benchmark> benchmarks;
     hashtable::microbenchmark<HashTable>::register_benchmarks(benchmarks);
+    hashtable::wordcount<HashTable>::register_benchmarks(benchmarks);
 
     // Register instrumentations
     common::contender_list<common::instrumentation> instrumentations;

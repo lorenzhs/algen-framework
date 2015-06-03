@@ -29,5 +29,20 @@ namespace util {
     static void delete_data(void* data) {
         delete[] static_cast<T*>(data);
     }
+
+    // awful hack!
+    static std::string hex_to_ascii(size_t hex) {
+        union {
+            size_t hex;
+            char letters[sizeof(size_t)];
+        } u = {hex};
+
+        std::stringstream s;
+        for (int i = sizeof(size_t) - 1; i >= 0; --i) {
+            if (u.letters[i] > 0)
+                s << u.letters[i];
+        }
+        return s.str();
+    }
 }
 }
