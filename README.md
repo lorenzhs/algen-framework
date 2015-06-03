@@ -53,6 +53,16 @@ git submodule init
 git submodule update
 ```
 
+## Verwendung im ATIS-Pool
+
+Da in der ATIS Fedora 20 läuft und kein ausreichend aktueller Compiler gebundlet ist, habe ich einen solchen für alle zugreifbar in meinem Home-Verzeichnis installiert. Alle Einstellungen dazu sind im alternativen Makefile `Makefile.atis` getroffen. Für die Verwendung im ATIS-Pool daher bitte entweder `Makefile.atis` in `Makefile` umbenennen oder `make -f Makefile.atis` verwenden.
+
+Für die Ausführung der Binaries ist es erforderlich, den Library-Suchpfad wie folgt zu modifizieren:
+
+```bash
+export LD_LIBRARY_PATH=/home/stud/s_huebsc/algen/gcc-4.9.2/lib64:/home/stud/s_huebsc/algen:lib
+```
+
 ## Voraussetzungen
 
 Da das Framework Funktionalität aus dem kommenden C++14-Standard verwendet, ist der GNU `g++`-Compiler in Version 4.9 oder neuer, bzw. der `clang++`-Compiler in Version 3.4 oder neuer erforderlich. Achtung: clang 3.4 und 3.5 können das `compare`-Target nicht mit Debuginformationen übersetzen. In diesem Fall bitte das Flag `-g` entfernen oder einen anderen Compiler verwenden.
