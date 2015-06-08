@@ -73,8 +73,10 @@ public:
                             aggregate.add_result(t);
 
                             // Print RESULT lines for sqlplot-tools
+                            // TODO generalize from tuple config
                             res << "RESULT"
-                                << " config=" << configuration
+                                << " config_1=" << configuration.first
+                                << " config_2=" << configuration.second
                                 << " ds=" << datastructure_factory.key()
                                 << " bench=" << benchmark_factory.key();
                             t->result(res);
