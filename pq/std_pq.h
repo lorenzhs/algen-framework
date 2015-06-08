@@ -19,6 +19,9 @@ public:
         list.register_contender(Factory("std::priority_queue", "std::priority-queue",
             [](){ return new std_pq<T>();}
         ));
+        list.register_contender(Factory("std::priority_queue with deque", "std::priority-queue-deque",
+            [](){ return new std_pq<T, std::deque<T>>();}
+        ));
     }
 
     /// Add an element to the priority queue by const lvalue reference
