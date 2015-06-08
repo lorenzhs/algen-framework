@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 import os
-import sys
+import argparse
 
 gnuplot_file = """# IMPORT-DATA results {data_fn}
 
@@ -54,21 +54,23 @@ ds_types = [("Hash Table", "hash", [("insert", "insert"),
                                       ("push", "push"),
                                       ("push-pop-mix on full heap", "push-pop-mix")])]
 
-data_fn_pattern = "results_{ds}_{res}.txt"
+data_fn_pattern = "{prefix}/results_{ds}_{res}.txt"
 out_fn_pattern = "{ds}_{bench}_{plot}"
 
-check_existence = True
-if len(sys.argv) > 1:
-    if sys.argv[1] in ["--all", "-a"]:
-        check_existence = False
+parser = argparse.ArgumentParser(description='Generate plots with GNUplot')
+parser.add_argument('--all', dest='check_existence', action='store_false',
+    help='Generate all plots, even if accompanying data file does not exist')
+parser.add_argument('--prefix', dest='prefix', default='.',
+    metavar='PATH', help='Location of data files')
+args = parser.parse_args()
 
 for (ds_name, ds_abbrv, ds_bench) in ds_types:
     for (bench_name, bench_col) in ds_bench:
         for (fn_segment, plots) in plot_types:
-            data_fn = data_fn_pattern.format(ds=ds_abbrv, res=fn_segment)
+            data_fn = data_fn_pattern.format(prefix=args.prefix, ds=ds_abbrv, res=fn_segment)
 
             # Check whether data file exists
-            if check_existence and not os.path.isfile(data_fn):
+            if args.check_existence and not os.path.isfile(data_fn):
                 continue
 
             for (plot_desc, plot_name, col_name, opts) in plots:
