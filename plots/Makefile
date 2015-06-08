@@ -1,9 +1,16 @@
-%: %.plot
-	sp-process $@.plot
-	gnuplot $@.plot
+all: generate plot
 
-all: hash_time hash_L1miss hash_L2miss hash_L3miss hash_branchmiss \
-	hash_cycles hash_instructions hash_mem_peak hash_mem_total hash_mem_mallocs
+generate:
+	./generate.py
+
+plot:
+	for f in *.plot; do\
+	    sp-process $$f; \
+	    gnuplot $$f; \
+	done;
 
 clean:
-	rm -rf *.pdf *-data.txt
+	rm -rf *.svg *-data.txt *.svg
+
+distclean: clean
+	rm -rf *.plot

@@ -1,2 +1,5 @@
 *.pdf
 *-data.txt
+*.svg
+*.plot
+*.pyc
