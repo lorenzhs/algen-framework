@@ -60,7 +60,7 @@ Da in der ATIS Fedora 20 läuft und kein ausreichend aktueller Compiler gebundle
 Für die Ausführung der Binaries ist es erforderlich, den Library-Suchpfad wie folgt zu modifizieren:
 
 ```bash
-export LD_LIBRARY_PATH=/home/stud/s_huebsc/algen/gcc-4.9.2/lib64:/home/stud/s_huebsc/algen:lib
+export LD_LIBRARY_PATH=/home/stud/s_huebsc/algen/gcc-4.9.2/lib64:/home/stud/s_huebsc/algen/lib
 ```
 
 ## Voraussetzungen
