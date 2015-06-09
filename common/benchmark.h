@@ -17,6 +17,8 @@ class benchmark_result {
 public:
     virtual ~benchmark_result() {}
 
+    virtual bool is_same_type(benchmark_result *other) const = 0;
+
     virtual void add(const benchmark_result *const other) = 0;
     virtual void min(const benchmark_result *const other) = 0;
     virtual void max(const benchmark_result *const other) = 0;
@@ -134,6 +136,10 @@ public:
     void serialize(Archive & ar, const unsigned int) {
         ar & benchmark & instance & configuration & instrumentation;
         ar & min & max & avg & num_results;
+    }
+
+    bool is_same_type(const benchmark_result_aggregate &other) const {
+        return avg->is_same_type(other.avg);
     }
 protected:
     std::string benchmark, instance, configuration, instrumentation;

@@ -30,6 +30,11 @@ public:
     timer_result(double d) : duration(d) {}
     timer_result() : duration(0) {}
     virtual ~timer_result() {}
+
+    bool is_same_type(benchmark_result *other) const override {
+        return dynamic_cast<timer_result*>(other) != nullptr;
+    }
+
     std::ostream& print(std::ostream& os) const override {
         return os << duration << "ms";
     }
@@ -95,6 +100,15 @@ public:
         events[0] = e[0]; events[1] = e[1]; events[2] = e[2];
     }
     virtual ~papi_result() {}
+
+    bool is_same_type(benchmark_result *other) const override {
+        papi_result* ptr = dynamic_cast<papi_result*>(other);
+        if (ptr == nullptr) return false;
+        // Even if type matches, check that they describe the same events
+        return events[0] == ptr->events[0]
+            && events[1] == ptr->events[1]
+            && events[2] == ptr->events[2];
+    }
 
     static std::string describe_event(int event) {
         PAPI_event_info_t info;
@@ -211,6 +225,10 @@ public:
     memory_result() : total(0), peak(0), count(0) {}
     memory_result(size_t total, size_t peak, size_t count) : total(total), peak(peak), count(count) {}
     virtual ~memory_result() {}
+
+    bool is_same_type(benchmark_result *other) const override {
+        return dynamic_cast<memory_result*>(other) != nullptr;
+    }
 
     std::ostream& print(std::ostream& os) const override {
         return os
