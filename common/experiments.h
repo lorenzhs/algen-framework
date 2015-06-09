@@ -107,9 +107,22 @@ public:
     }
 
     void merge(std::vector<std::vector<common::benchmark_result_aggregate>> &other) {
-        // TODO: Check datastructure types
-        assert(results.size() == other.size());
+        if (results.size() != other.size()) {
+            std::cerr << "Cannot append results: Data structure mismatch ("
+                      << results.size() << " types here, "
+                      << other.size() << " types in file)!" << std::endl
+                      << "Not appending results." << std::endl;
+            return;
+        }
         for (size_t i = 0; i < results.size(); ++i) {
+            if (results[i][0].instance_desc() != other[i][0].instance_desc()) {
+                // Type mismatch!
+                std::cerr << "Data structure type mismatch in " << i << "-th position: "
+                          << results[i][0].instance_desc() << " vs "
+                          << other[i][0].instance_desc() << std::endl
+                          << "Results before first mismatch were processed, skipping remainder."  << std::endl;
+                break;
+            }
             results[i].insert(results[i].begin(), other[i].cbegin(), other[i].cend());
         }
     }
