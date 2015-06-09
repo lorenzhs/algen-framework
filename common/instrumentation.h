@@ -30,30 +30,30 @@ public:
     timer_result(double d) : duration(d) {}
     timer_result() : duration(0) {}
     virtual ~timer_result() {}
-    std::ostream& print(std::ostream& os) const {
+    std::ostream& print(std::ostream& os) const override {
         return os << duration << "ms";
     }
-    std::ostream& result(std::ostream& os) const {
+    std::ostream& result(std::ostream& os) const override {
         return os << " time=" << duration;
     }
 
-    virtual void add(const benchmark_result *const other) {
+    void add(const benchmark_result *const other) override {
         duration += dynamic_cast<const timer_result*>(other)->duration;
     };
-    virtual void min(const benchmark_result *const other) {
+    void min(const benchmark_result *const other) override {
         duration = std::min(duration, dynamic_cast<const timer_result*>(other)->duration);
     };
-    virtual void max(const benchmark_result *const other) {
+    void max(const benchmark_result *const other) override {
         duration = std::max(duration, dynamic_cast<const timer_result*>(other)->duration);
     };
-    virtual void div(const int divisor) { duration /= divisor; };
+    void div(const int divisor) override { duration /= divisor; };
 
-    virtual std::vector<double> compare_to(const benchmark_result *other) {
+    std::vector<double> compare_to(const benchmark_result *other) override {
         const timer_result *o = dynamic_cast<const timer_result*>(other);
         return std::vector<double>{duration / o->duration};
     }
 
-    virtual std::ostream& print_component(int component, std::ostream &os) {
+    std::ostream& print_component(int component, std::ostream &os) override {
         assert(component == 0); (void)component;
         return os << duration << "ms";
     }
@@ -102,48 +102,48 @@ public:
         return std::string{(char*)info.short_descr};
     }
 
-    std::ostream& print(std::ostream& os) const {
+    std::ostream& print(std::ostream& os) const override {
         return os << describe_event(events[0]) << ": " << counters[0] << "; "
                   << describe_event(events[1]) << ": " << counters[1] << "; "
                   << describe_event(events[2]) << ": " << counters[2] << ".";
     }
 
-    virtual std::ostream& print_component(int component, std::ostream &os) {
+    std::ostream& print_component(int component, std::ostream &os) override {
         assert(component >= 0 && component <= 2);
         return os << describe_event(events[component]) << ": " << counters[component];
     }
 
-    std::ostream& result(std::ostream& os) const {
+    std::ostream& result(std::ostream& os) const override {
         return os << " " << format_result_column(describe_event(events[0])) << "=" << counters[0]
                   << " " << format_result_column(describe_event(events[1])) << "=" << counters[1]
                   << " " << format_result_column(describe_event(events[2])) << "=" << counters[2];
     }
 
-    virtual void add(const benchmark_result *const other) {
+    void add(const benchmark_result *const other) override {
         const papi_result* o = dynamic_cast<const papi_result*>(other);
         counters[0] += o->counters[0];
         counters[1] += o->counters[1];
         counters[2] += o->counters[2];
     };
-    virtual void min(const benchmark_result *const other) {
+    void min(const benchmark_result *const other) override {
         const papi_result* o = dynamic_cast<const papi_result*>(other);
         counters[0] = std::min(counters[0], o->counters[0]);
         counters[1] = std::min(counters[1], o->counters[1]);
         counters[2] = std::min(counters[2], o->counters[2]);
     };
-    virtual void max(const benchmark_result *const other) {
+    void max(const benchmark_result *const other) override {
         const papi_result* o = dynamic_cast<const papi_result*>(other);
         counters[0] = std::max(counters[0], o->counters[0]);
         counters[1] = std::max(counters[1], o->counters[1]);
         counters[2] = std::max(counters[2], o->counters[2]);
     };
-    virtual void div(const int divisor) {
+    void div(const int divisor) override {
         counters[0] /= divisor;
         counters[1] /= divisor;
         counters[2] /= divisor;
     };
 
-    virtual std::vector<double> compare_to(const benchmark_result *other) {
+    std::vector<double> compare_to(const benchmark_result *other) override {
         const papi_result *o = dynamic_cast<const papi_result*>(other);
         auto divide = [](long long a, long long b) -> double {
             if (a == 0 && b == 0) return 1.0;
@@ -212,41 +212,41 @@ public:
     memory_result(size_t total, size_t peak, size_t count) : total(total), peak(peak), count(count) {}
     virtual ~memory_result() {}
 
-    std::ostream& print(std::ostream& os) const {
+    std::ostream& print(std::ostream& os) const override {
         return os
             << "total allocations: " << total << "B (" << (1.0 * total) / (1<<20) << " MB)"
             <<     "; peak memory: " <<  peak << "B (" << (1.0 *  peak) / (1<<20) << " MB)"
             << "; num mallocs: " << count;
     }
-    std::ostream& result(std::ostream& os) const {
+    std::ostream& result(std::ostream& os) const override {
         return os << " totalmem=" << total << " peakmem=" << peak << " mallocs=" << count;
     }
 
-    virtual void add(const benchmark_result *const other) {
+    void add(const benchmark_result *const other) override {
         const memory_result* o = dynamic_cast<const memory_result*>(other);
         total += o->total;
         peak  += o->peak;
         count += o->count;
     };
-    virtual void min(const benchmark_result *const other) {
+    void min(const benchmark_result *const other) override {
         const memory_result* o = dynamic_cast<const memory_result*>(other);
         total = std::min(total, o->total);
         peak  = std::min(peak,  o->peak );
         count = std::min(count, o->count);
     };
-    virtual void max(const benchmark_result *const other) {
+    void max(const benchmark_result *const other) override {
         const memory_result* o = dynamic_cast<const memory_result*>(other);
         total = std::max(total, o->total);
         peak  = std::max(peak,  o->peak );
         count = std::max(count, o->count);
     };
-    virtual void div(const int divisor) {
+    void div(const int divisor) override {
         total /= divisor;
         peak  /= divisor;
         count /= divisor;
     };
 
-    virtual std::vector<double> compare_to(const benchmark_result *other) {
+    std::vector<double> compare_to(const benchmark_result *other) override {
         const memory_result *o = dynamic_cast<const memory_result*>(other);
         auto divide = [](size_t a,size_t b) -> double {
             if (a == 0 && b == 0) return 1.0;
@@ -259,7 +259,7 @@ public:
         };
     }
 
-    virtual std::ostream& print_component(int component, std::ostream &os) {
+    std::ostream& print_component(int component, std::ostream &os) override {
         switch (component) {
         case 0: return os << "total allocations: " << total << "B (" << (1.0 * total) / (1<<20) << " MB)";
         case 1: return os <<       "peak memory: " <<  peak << "B (" << (1.0 *  peak) / (1<<20) << " MB)";
