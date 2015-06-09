@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
@@ -105,7 +106,32 @@ public:
         }
     }
 
-    void serialize(const std::string &fn) {
+    void merge(std::vector<std::vector<common::benchmark_result_aggregate>> &other) {
+        // TODO: Check datastructure types
+        assert(results.size() == other.size());
+        for (size_t i = 0; i < results.size(); ++i) {
+            results[i].insert(results[i].begin(), other[i].cbegin(), other[i].cend());
+        }
+    }
+
+    void append(const std::string &fn) {
+        // Un-serialize results
+        std::ifstream ifs(fn);
+        if (!ifs.good() || !ifs.is_open()) {
+            std::cerr << "Can't open file for reading: " << fn << std::endl;
+            return;
+        }
+        boost::archive::text_iarchive ia(ifs);
+
+        std::vector<std::vector<common::benchmark_result_aggregate>> other_results;
+        ia >> other_results;
+        merge(other_results);
+    }
+
+    void serialize(const std::string &fn, const bool append_results = false) {
+        if (append_results) {
+            append(fn);
+        }
         std::ofstream ofs(fn);
         boost::archive::text_oarchive oa(ofs);
         oa << results;

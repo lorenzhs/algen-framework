@@ -23,6 +23,7 @@ void usage(char* name) {
     using std::endl;
     cout << "Usage: " << name << " <options>" << endl << endl
          << "Options:" << endl
+         << "-a            append results instead of replacing" << endl
          << "-o <filename> result serialization filename (default: data_pq.txt)" << endl
          << "-p <prefix>   result filename prefix (default: results_pq_)" << endl
          << "-n <int>      number of repetitions for each benchmark (default: 1)" << endl
@@ -53,7 +54,8 @@ int main(int argc, char** argv) {
     __attribute__((unused)) // don't warn when compiling malloc target
     const bool disable_timer      = args.is_set("nt"),
                disable_papi_cache = args.is_set("npc") || args.is_set("np"),
-               disable_papi_instr = args.is_set("npi") || args.is_set("np");
+               disable_papi_instr = args.is_set("npi") || args.is_set("np"),
+               append_results = args.is_set("a");
 
     using PQ = pq::priority_queue<int>;
     using Configuration = std::pair<size_t, size_t>;
@@ -110,7 +112,7 @@ int main(int argc, char** argv) {
     }
 
     // Serialize results to disk for further evaluation
-    runner.serialize(serializationfn);
+    runner.serialize(serializationfn, append_results);
 
     runner.shutdown();
 }

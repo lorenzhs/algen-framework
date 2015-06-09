@@ -53,7 +53,7 @@ public:
     benchmark_result_aggregate(benchmark_result *min, benchmark_result *max, benchmark_result *avg)
         : min(min), max(max), avg(avg), num_results(0) {}
     benchmark_result_aggregate(const benchmark_result_aggregate &other) = default;
-    benchmark_result_aggregate(benchmark_result_aggregate&& other) = default;
+
     void destroy() { // can't put this in d'tor because copies are made
         if (min != nullptr) delete min; min = nullptr;
         if (max != nullptr) delete max; max = nullptr;
