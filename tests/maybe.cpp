@@ -54,7 +54,8 @@ SCENARIO("maybe monad", "[maybe]") {
 		WHEN("We try to cast it") {
 			THEN("It throws"){
 				CHECK_THROWS((int)a);
-				CHECK_THROWS(char b = (char)a);
+				__attribute__((unused)) char b;
+				CHECK_THROWS(b = (char)a);
 				CHECK_THROWS((int)n);
 				CHECK_THROWS((void*)n);
 			}

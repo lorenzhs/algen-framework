@@ -21,7 +21,7 @@ directories: ${BUILDDIR}
 build:
 	mkdir -p ${BUILDDIR}
 
-build/%.o: %.cpp
+${BUILDDIR}/%.o: %.cpp build
 	$(CXX) $(CFLAGS) -c $< -o $@
 
 tests: $(OBJ)
