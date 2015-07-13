@@ -26,7 +26,7 @@ public:
 
     static void* fill_map_random(HashTable &map, Configuration config, void*) {
         std::mt19937 gen{config.second};
-        for (size_t i = 0; i < config.first; ++i) {
+        for (size_t i = 1; i <= config.first; ++i) {
             map[i] = gen();
         }
         return nullptr;
