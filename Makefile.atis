@@ -2,7 +2,7 @@
 # clang++ 3.4 and 3.5 cannot build the compare target with debug information.
 # Either remove "-g" from the flags or use clang++ >= 3.6 (or g++).
 BASE ?= /home/stud/s_huebsc/algen
-LD_LIBRARY_PATH=${BASE}/gcc-4.9.2/lib64:${BASE}/lib
+export LD_LIBRARY_PATH=${BASE}/gcc-4.9.2/lib64:${BASE}/lib
 
 CX ?= ${BASE}/gcc-4.9.2/bin/g++
 CC ?= gcc
