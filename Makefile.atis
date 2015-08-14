@@ -12,7 +12,7 @@ SANITIZER ?= address
 COMMONFLAGS = -std=c++1y -Wall -Wextra -Werror -isystem ${BASE}/include
 CFLAGS = ${COMMONFLAGS} -Ofast -g -DNDEBUG
 DEBUGFLAGS = ${COMMONFLAGS} -O0 -ggdb3
-LDFLAGS = -L${BASE}/lib -lpapi -lboost_serialization
+LDFLAGS = -L${BASE}/lib -lpapi -lpfm -lboost_serialization
 MALLOC_LDFLAGS = -ldl
 
 all: bench_hash bench_pq
