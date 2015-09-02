@@ -194,14 +194,14 @@ public:
     void setup() {
         int ret = PAPI_start_counters(events, 3);
         if (ret != PAPI_OK) {
-            std::cerr << "Failed to start PAPI counters" << std::endl;
+            std::cerr << "Failed to start PAPI counters. Error " << PAPI_strerror(ret) << std::endl;
         }
     }
 
     void finish() {
         int ret = PAPI_stop_counters(counters, 3);
         if (ret != PAPI_OK) {
-            std::cerr << "PAPI_stop_counters failed" << std::endl;
+            std::cerr << "PAPI_stop_counters failed. Error " << PAPI_strerror(ret)  << std::endl;
         }
     }
 
