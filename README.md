@@ -65,7 +65,7 @@ export LD_LIBRARY_PATH=/home/stud/s_huebsc/algen/gcc-4.9.2/lib64:/home/stud/s_hu
 
 ## Voraussetzungen
 
-Da das Framework Funktionalität aus dem kommenden C++14-Standard verwendet, ist der GNU `g++`-Compiler in Version 4.9 oder neuer, bzw. der `clang++`-Compiler in Version 3.4 oder neuer erforderlich. Achtung: clang 3.4 und 3.5 können das `compare`-Target nicht mit Debuginformationen übersetzen. In diesem Fall bitte das Flag `-g` entfernen oder einen anderen Compiler verwenden.
+Da das Framework Funktionalität aus dem C++14-Standard verwendet, ist der GNU `g++`-Compiler in Version 4.9 oder neuer, bzw. der `clang++`-Compiler in Version 3.4 oder neuer erforderlich. Achtung: clang 3.4 und 3.5 können das `compare`-Target nicht mit Debuginformationen übersetzen. In diesem Fall bitte das Flag `-g` entfernen oder einen anderen Compiler verwenden. Das Framework macht an einigen Stellen die Annahme, dass ̀size_t̀ ein 64-bit-Typ ist. 32-bit-Systeme werden nicht unterstützt, es existiert aber ein [Fork](https://github.com/FrederikP/algen-framework), der dies teilweise nachrüstet.
 
 Folgende Libraries sind erforderlich:
 
