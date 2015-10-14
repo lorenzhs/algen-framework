@@ -60,7 +60,15 @@ public:
             //std::make_pair(1<<26, 0xCA55E77E)
         };
 
-        common::register_benchmark("push", "push",  microbenchmark::fill_heap_random<1>, configs, benchmarks);
+        common::register_benchmark("push", "push",
+            microbenchmark::fill_data_random<1>,
+            [](PQ &queue, Configuration config, void* ptr) {
+                T* data = static_cast<T*>(ptr);
+                for (size_t i = 0; i < config.first; ++i)
+                {
+                    queue.push(data[i]);
+                }
+            }, microbenchmark::clear_data, configs, benchmarks);
 
         common::register_benchmark("pop", "pop", microbenchmark::fill_heap_random<1>,
             [](PQ &queue, Configuration, void*) {
